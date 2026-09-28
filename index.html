@@ -1,0 +1,1901 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>まなびカード</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="まなびカード">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f6f5f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)">
+<style>
+:root{
+  --bg:#f6f5f2; --panel:#ffffff; --panel2:#f0efec; --line:#e3e1dc;
+  --ink:#1b1b1a; --ink2:#5b5a56; --ink3:#8a8984;
+  --acc:#2a78d6; --acc2:#e8f1fc; --acc-ink:#ffffff;
+  --ok:#1f8f4e; --ok-bg:#e5f4eb; --ng:#cf3f3f; --ng-bg:#fbe9e9;
+  --c-new:#2a78d6; --c-learn:#c2571f; --c-rev:#1f8f4e;
+  --h0:#ebeae6; --h1:#b7d3f6; --h2:#6da7ec; --h3:#2a78d6; --h4:#184f95; --bar:#2a78d6;
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 6px 20px rgba(0,0,0,.05);
+  --r:14px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#141413; --panel:#1e1e1c; --panel2:#282826; --line:#363531;
+    --ink:#f2f1ed; --ink2:#b9b8b0; --ink3:#85847d;
+    --acc:#3987e5; --acc2:#1b2c42; --acc-ink:#ffffff;
+    --ok:#43c07a; --ok-bg:#163021; --ng:#e86b6b; --ng-bg:#3a1d1d;
+    --c-new:#6da7ec; --c-learn:#ec835a; --c-rev:#43c07a;
+    --h0:#2a2a28; --h1:#184f95; --h2:#256abf; --h3:#3987e5; --h4:#86b6ef; --bar:#3987e5;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141413; --panel:#1e1e1c; --panel2:#282826; --line:#363531;
+  --ink:#f2f1ed; --ink2:#b9b8b0; --ink3:#85847d;
+  --acc:#3987e5; --acc2:#1b2c42; --acc-ink:#ffffff;
+  --ok:#43c07a; --ok-bg:#163021; --ng:#e86b6b; --ng-bg:#3a1d1d;
+  --c-new:#6da7ec; --c-learn:#ec835a; --c-rev:#43c07a;
+  --h0:#2a2a28; --h1:#184f95; --h2:#256abf; --h3:#3987e5; --h4:#86b6ef; --bar:#3987e5;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font:15px/1.65 system-ui,-apple-system,"Segoe UI","Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif;-webkit-font-smoothing:antialiased}
+img{max-width:100%}
+[hidden]{display:none!important}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--acc)}
+
+/* header */
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.top-in{max-width:1080px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:16px}
+.brand{font-weight:800;letter-spacing:.02em;font-size:17px;display:flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap}
+.brand i{width:22px;height:22px;border-radius:7px;background:var(--acc);display:inline-block;position:relative}
+.brand i::after{content:"";position:absolute;inset:5px 6px;border:2px solid #fff;border-radius:3px}
+nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1}
+nav::-webkit-scrollbar{display:none}
+nav button{border:0;background:none;padding:7px 12px;border-radius:9px;color:var(--ink2);cursor:pointer;white-space:nowrap;font-size:14px}
+nav button:hover{background:var(--panel2);color:var(--ink)}
+nav button.on{background:var(--panel);color:var(--ink);box-shadow:var(--shadow);font-weight:600}
+
+main{max-width:1080px;margin:0 auto;padding:24px 20px 80px}
+h1{font-size:22px;margin:0 0 16px}
+h2{font-size:17px;margin:0}
+.sub{color:var(--ink2);font-size:13px}
+.muted{color:var(--ink3)}
+
+/* primitives */
+.btn{border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:10px;cursor:pointer;white-space:nowrap;transition:background .12s,transform .06s}
+.btn:hover{background:var(--panel2)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:var(--acc-ink);font-weight:600}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.danger{color:var(--ng)}
+.btn.sm{padding:5px 10px;font-size:13px;border-radius:8px}
+.btn.big{padding:12px 22px;font-size:16px;border-radius:12px}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.link{border:0;background:none;color:var(--ink2);cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:4px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.pad{padding:20px}
+input[type=text],input[type=number],input:not([type]),select,textarea{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 11px;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc2)}
+textarea{resize:vertical}
+label{display:block;font-size:13px;color:var(--ink2);margin-bottom:12px}
+label>input,label>select,label>textarea{margin-top:4px;font-size:15px;color:var(--ink)}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink)}
+.chk input{width:auto;margin:0}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.spacer{flex:1}
+.badge{display:inline-block;font-size:11px;padding:1px 7px;border-radius:99px;background:var(--panel2);color:var(--ink2);white-space:nowrap}
+.tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:5px;background:var(--acc2);color:var(--acc);margin-right:3px}
+.n-new{color:var(--c-new)} .n-learn{color:var(--c-learn)} .n-rev{color:var(--c-rev)}
+
+/* home */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.tile{padding:14px 16px;display:flex;flex-direction:column;justify-content:center}
+.tile .v{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.3}
+.tile .k{font-size:12px;color:var(--ink2)}
+.hero{display:grid;gap:12px;margin-bottom:28px}
+.hero-go{display:flex;align-items:center;gap:16px 24px;padding:18px 22px;flex-wrap:wrap}
+.hero-go .counts{font-size:22px;gap:20px}
+.hero-go .counts small{font-size:13px}
+.sec-h{display:flex;align-items:center;gap:12px;margin:0 0 12px;flex-wrap:wrap}
+.decks{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.deck{padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.deck-h{display:flex;align-items:flex-start;gap:8px}
+.deck-name{font-weight:700;font-size:16px;flex:1;word-break:break-word}
+.deck-c{display:flex;gap:14px;font-size:13px;font-variant-numeric:tabular-nums}
+.deck-c b{font-size:18px;display:block;line-height:1.2}
+.deck-c span{color:var(--ink2)}
+.deck-a{display:flex;gap:8px;flex-wrap:wrap}
+.menu-btn{border:0;background:none;cursor:pointer;color:var(--ink3);padding:2px 6px;border-radius:6px;font-size:18px;line-height:1}
+.menu-btn:hover{background:var(--panel2)}
+.inline{display:flex;gap:8px}
+.inline input{width:220px}
+.empty{padding:40px 20px;text-align:center;color:var(--ink2)}
+
+/* study */
+.study{max-width:760px;margin:0 auto}
+.st-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.counts{display:flex;gap:12px;font-weight:700;font-variant-numeric:tabular-nums;font-size:14px}
+.counts small{font-weight:400;color:var(--ink3);margin-left:2px}
+.progress{height:4px;background:var(--panel2);border-radius:4px;overflow:hidden;margin-bottom:14px}
+.progress i{display:block;height:100%;background:var(--acc);border-radius:4px;transition:width .2s}
+.qcard{padding:28px 32px 26px;min-height:280px;display:flex;flex-direction:column;touch-action:pan-y}
+.qmeta{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--ink3);margin-bottom:18px;flex-wrap:wrap}
+.qtext{font-size:24px;line-height:1.6;font-weight:600;word-break:break-word}
+.atext{font-size:21px;line-height:1.6;word-break:break-word}
+.divider{height:1px;background:var(--line);margin:22px 0}
+.exp{margin-top:16px;padding:12px 14px;border-radius:10px;background:var(--panel2);font-size:14px;color:var(--ink2)}
+.exp b{color:var(--ink)}
+.imgs{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.imgs img{max-height:320px;border-radius:10px;border:1px solid var(--line);cursor:zoom-in;background:var(--panel2)}
+.opts{display:grid;gap:10px;margin-top:22px}
+.opt{display:flex;gap:12px;align-items:center;text-align:left;border:1.5px solid var(--line);background:var(--panel);border-radius:12px;padding:12px 14px;cursor:pointer;font-size:16px;transition:border-color .12s,background .12s}
+.opt:hover:not(:disabled){border-color:var(--acc);background:var(--acc2)}
+.opt .k{flex:none;width:24px;height:24px;border-radius:7px;background:var(--panel2);display:grid;place-items:center;font-size:12px;color:var(--ink2);font-weight:700}
+.opt.ok{border-color:var(--ok);background:var(--ok-bg)}
+.opt.ng{border-color:var(--ng);background:var(--ng-bg)}
+.opt.dim{opacity:.5}
+.opt:disabled{cursor:default}
+.ansrow{display:flex;gap:8px;margin-top:22px}
+.ansrow input{font-size:18px;padding:11px 14px}
+.verdict{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;margin-top:22px;padding:10px 14px;border-radius:10px}
+.verdict.ok{background:var(--ok-bg);color:var(--ok)}
+.verdict.ng{background:var(--ng-bg);color:var(--ng)}
+.verdict small{font-weight:400;font-size:13px;color:var(--ink2)}
+.yours{margin-top:12px;font-size:14px;color:var(--ink2)}
+.yours s{color:var(--ng)}
+.acts{display:flex;gap:12px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+.judge{flex:1;max-width:260px;border:0;border-radius:14px;padding:14px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:17px;font-weight:700;transition:filter .12s,transform .06s}
+.judge:active{transform:translateY(1px)}
+.judge small{font-weight:400;font-size:12px;opacity:.8}
+.judge.ng{background:var(--ng-bg);color:var(--ng)}
+.judge.ok{background:var(--ok-bg);color:var(--ok)}
+.judge.go{background:var(--acc);color:var(--acc-ink)}
+.judge:hover{filter:brightness(.97)}
+.st-tools{display:flex;gap:4px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+.st-tools .link{font-size:13px;text-decoration:none;color:var(--ink3);border-radius:8px;padding:4px 10px}
+.st-tools .link:hover{background:var(--panel2);color:var(--ink)}
+.keys{text-align:center;font-size:12px;color:var(--ink3);margin-top:8px}
+kbd{font:11px ui-monospace,monospace;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--panel)}
+.flag-on{color:#d69e00!important}
+.finish{text-align:center;padding:40px 24px}
+.finish .big{font-size:44px;font-weight:800;font-variant-numeric:tabular-nums}
+.wrong-list{text-align:left;margin-top:20px;display:grid;gap:8px}
+.wrong-list div{padding:10px 14px;border-radius:10px;background:var(--panel2);font-size:14px}
+
+/* table */
+.tbl-wrap{overflow-x:auto;border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:12px;color:var(--ink2);font-weight:600;background:var(--panel2);white-space:nowrap;position:sticky;top:0}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--panel2)}
+td.clip{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+.bulk{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 14px;margin-bottom:12px}
+
+/* form */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.imgzone{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:-4px 0 14px;padding:8px;border:1.5px dashed var(--line);border-radius:10px;min-height:52px}
+.imgzone.drag{border-color:var(--acc);background:var(--acc2)}
+.imgzone .hint{font-size:12px;color:var(--ink3)}
+.thumb{position:relative}
+.thumb img{height:64px;border-radius:8px;border:1px solid var(--line);display:block}
+.thumb button{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;border:0;background:var(--ink);color:var(--bg);font-size:12px;cursor:pointer;line-height:20px;padding:0}
+
+/* overlay */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;display:grid;place-items:center;padding:20px}
+.dlg{width:min(720px,100%);max-height:calc(100vh - 40px);overflow:auto;padding:22px 24px}
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:60;display:grid;place-items:center;cursor:zoom-out;padding:20px}
+.lightbox img{max-width:100%;max-height:100%;border-radius:8px}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:12px;font-size:14px;z-index:70;opacity:0;pointer-events:none;transition:opacity .2s;max-width:calc(100% - 32px)}
+#toast.show{opacity:1}
+#tip{position:fixed;z-index:80;pointer-events:none;background:var(--panel);color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:8px;padding:6px 10px;font-size:12px;white-space:nowrap}
+
+/* import */
+.imp{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;align-items:start}
+.imp textarea.src{font:13px/1.55 ui-monospace,"Cascadia Mono",Consolas,monospace;min-height:240px}
+.drop{border:1.5px dashed var(--line);border-radius:12px;padding:14px;text-align:center;color:var(--ink2);font-size:13px;margin-bottom:12px;cursor:pointer}
+.drop.drag{border-color:var(--acc);background:var(--acc2)}
+pre.prompt{white-space:pre-wrap;font:12.5px/1.6 ui-monospace,Consolas,monospace;background:var(--panel2);border-radius:10px;padding:12px;max-height:300px;overflow:auto;margin:0 0 10px}
+.fmt-help{font-size:12.5px;color:var(--ink2)}
+.fmt-help code{font:12px ui-monospace,Consolas,monospace;background:var(--panel2);padding:1px 5px;border-radius:5px}
+.fmt-help pre{font:12px/1.5 ui-monospace,Consolas,monospace;background:var(--panel2);padding:8px 10px;border-radius:8px;margin:4px 0 10px;overflow-x:auto}
+.dup td{opacity:.45}
+
+/* stats */
+.chart-box{padding:18px 20px;margin-bottom:16px}
+.chart-box h2{margin-bottom:4px}
+.chart-scroll{overflow-x:auto;margin-top:10px}
+.legend{display:flex;gap:4px;align-items:center;font-size:11px;color:var(--ink3);margin-top:8px}
+.legend i{width:11px;height:11px;border-radius:2px;display:inline-block}
+svg text{fill:var(--ink3);font-size:10px;font-family:inherit}
+details summary{cursor:pointer;font-size:13px;color:var(--ink2);margin-top:8px}
+
+/* home */
+.quick{display:flex;gap:10px;flex-wrap:wrap}
+.quick .btn{flex:1;min-width:140px;padding:12px}
+.banner{padding:14px 18px;margin-bottom:14px;display:flex;gap:10px 16px;align-items:center;flex-wrap:wrap;border-color:var(--acc)}
+.banner p{margin:0;flex:1;min-width:220px;font-size:14px}
+/* 写真で追加 */
+:root{--tabh:0px}
+.ph{max-width:640px;margin:0 auto}
+.ph-slot{padding:14px 16px;margin-bottom:14px}
+.ph-h{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ph-img{margin-bottom:12px}
+.ph-img img{width:100%;max-height:46vh;object-fit:contain;border-radius:10px;background:var(--panel2);display:block}
+.ph-tools{display:flex;gap:8px;margin-top:6px}
+.ph-add{display:flex;gap:8px;flex-wrap:wrap}
+.ph-add .btn{flex:1;padding:13px 10px;font-size:15px;min-width:120px}
+.ph-text{padding:12px 16px;margin-bottom:14px}
+.ph-text summary{margin:0}
+.ph-save{position:sticky;bottom:calc(var(--tabh) + env(safe-area-inset-bottom,0px) + 10px);z-index:5}
+.ph-save .btn{width:100%;box-shadow:var(--shadow)}
+.pairs{display:grid;gap:10px;margin-bottom:14px}
+.pair{display:grid;grid-template-columns:22px 1fr 1fr;gap:10px;padding:10px;align-items:start}
+.pair-n{font-weight:700;color:var(--ink3);text-align:center;padding-top:4px}
+.pair figure{margin:0;position:relative}
+.pair img,.noimg{width:100%;height:150px;object-fit:contain;background:var(--panel2);border-radius:8px;display:block}
+.noimg{display:grid;place-items:center;color:var(--ink3);font-size:13px}
+.pair figcaption{font-size:12px;color:var(--ink2);text-align:center;margin-top:2px}
+.pair .x{position:absolute;top:4px;right:4px;width:28px;height:28px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;cursor:pointer;font-size:13px}
+.pair-t{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end}
+/* 切り抜き */
+.cropov{position:fixed;inset:0;z-index:90;background:#000;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.crop-hint{color:#bbb;text-align:center;font-size:12px;padding:8px}
+.crop-stage{flex:1;position:relative;min-height:0}
+.crop-stage canvas{position:absolute;inset:0;touch-action:none}
+.crop-bar{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:#111}
+.crop-bar .btn{flex:1;background:#262626;color:#fff;border-color:#383838;padding:12px 6px}
+.crop-bar .btn.primary{background:#2a78d6;border-color:#2a78d6}
+.mini{height:34px;width:34px;object-fit:cover;border-radius:6px;vertical-align:middle;margin-right:6px;background:var(--panel2)}
+#tabbar{display:none}
+button,.btn,.opt,.judge,.link{touch-action:manipulation}
+.qcard .imgs img{max-height:min(62vh,560px);max-width:100%}
+
+@media (max-width:760px){
+  :root{--tabh:64px}
+  .top{display:none}
+  main{padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(96px + env(safe-area-inset-bottom,0px))}
+  #tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:6px 4px env(safe-area-inset-bottom,0px)}
+  #tabbar button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--ink3);padding:4px 0 6px;cursor:pointer}
+  #tabbar svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  #tabbar button.on{color:var(--acc)}
+  body.studying #tabbar{display:none}
+  body.studying main{padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+  .acts{position:sticky;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:5;margin-top:14px}
+  .judge{padding:16px 10px}
+  .qcard .imgs img{width:100%;max-height:56vh;object-fit:contain}
+  .hide-m{display:none}
+  #toast{bottom:calc(var(--tabh) + 16px + env(safe-area-inset-bottom,0px))}
+  body.studying #toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+  .top-in{padding:8px 16px;gap:10px}
+  .brand span{display:none}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .filters{grid-template-columns:1fr 1fr}
+  .form-grid,.grid2,.imp{grid-template-columns:1fr}
+  .qcard{padding:22px 18px 20px;min-height:240px}
+  .qtext{font-size:20px}
+  .atext{font-size:18px}
+  .inline input{width:100%}
+  .inline{width:100%}
+  .keys{display:none}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <div class="brand" data-go="home"><i></i><span>まなびカード</span></div>
+  <nav id="nav">
+    <button data-go="home">ホーム</button>
+    <button data-go="photo">写真で追加</button>
+    <button data-go="import">取り込み</button>
+    <button data-go="add">追加</button>
+    <button data-go="browse">カード一覧</button>
+    <button data-go="stats">統計</button>
+    <button data-go="settings">設定</button>
+  </nav>
+</div></header>
+<main id="app"><div class="empty">読み込み中…</div></main>
+<nav id="tabbar">
+  <button data-go="home"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>ホーム</button>
+  <button data-go="photo"><svg viewBox="0 0 24 24"><path d="M4 7.5h3l2-3h6l2 3h3a1 1 0 0 1 1 1V19a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8.5a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg>写真で追加</button>
+  <button data-go="browse"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>一覧</button>
+  <button data-go="stats"><svg viewBox="0 0 24 24"><path d="M4 20V11M10 20V5M16 20v-6M21 20H3"/></svg>統計</button>
+  <button data-go="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>設定</button>
+</nav>
+<input type="file" id="imgFile" accept="image/*" multiple hidden>
+<input type="file" id="camIn" accept="image/*" capture="environment" hidden>
+<input type="file" id="picIn" accept="image/*" multiple hidden>
+<div id="toast"></div>
+<div id="tip" hidden></div>
+
+<script>
+'use strict';
+/* ============================================================
+   基本ユーティリティ
+   ============================================================ */
+const MIN = 60000, HOUR = 3600000, DAY = 86400000;
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const rich = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const clone = o => JSON.parse(JSON.stringify(o));
+const WD = ['日', '月', '火', '水', '木', '金', '土'];
+const TYPE_LABEL = { flash: '暗記カード', choice: '選択式', input: '記述式' };
+
+function toast(msg, ms = 2600) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), ms);
+}
+
+/* ============================================================
+   保存（IndexedDB：本体データ + 画像）
+   ============================================================ */
+let idb;
+function openDB() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('manabi-card', 1);
+    r.onupgradeneeded = () => { r.result.createObjectStore('kv'); r.result.createObjectStore('img'); };
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+function idbReq(store, mode, fn) {
+  return new Promise((res, rej) => {
+    const tx = idb.transaction(store, mode); const q = fn(tx.objectStore(store));
+    tx.oncomplete = () => res(q && q.result); tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error);
+  });
+}
+const idbGet = (s, k) => idbReq(s, 'readonly', st => st.get(k));
+const idbPut = (s, k, v) => idbReq(s, 'readwrite', st => st.put(v, k));
+const idbDel = (s, k) => idbReq(s, 'readwrite', st => st.delete(k));
+const idbKeys = s => idbReq(s, 'readonly', st => st.getAllKeys());
+
+const DEFAULTS = { newPerDay: 30, maxReviews: 300, learnSteps: [1, 10], relearnSteps: [10], retention: 0.9, maxIvl: 36500, dayStartHour: 4, autoChoice: true, leech: 5, theme: 'system' };
+let D = null;
+let saveTimer = null;
+function save() { clearTimeout(saveTimer); saveTimer = setTimeout(flush, 200); }
+async function flush() {
+  clearTimeout(saveTimer); saveTimer = null;
+  try { await idbPut('kv', 'data', D); }
+  catch (e) { toast('保存に失敗しました：' + e.message, 6000); }
+}
+addEventListener('visibilitychange', () => { if (document.hidden && saveTimer) flush(); });
+addEventListener('pagehide', () => { if (saveTimer) flush(); });
+
+/* 画像 */
+const imgCache = new Map();
+const isUrl = r => /^(https?:|data:|file:|blob:)/i.test(r);
+async function imgURL(id) {
+  if (isUrl(id)) return id;
+  if (imgCache.has(id)) return imgCache.get(id);
+  const blob = await idbGet('img', id);
+  if (!blob) return '';
+  const u = URL.createObjectURL(blob); imgCache.set(id, u); return u;
+}
+function hydrate(root = document) {
+  $$('img[data-img]', root).forEach(async el => { if (!el.getAttribute('src')) { const u = await imgURL(el.dataset.img); if (u) el.src = u; else el.alt = '（画像が見つかりません）'; } });
+}
+function imgsHTML(list) {
+  if (!list || !list.length) return '';
+  return `<div class="imgs">${list.map(r => isUrl(r) ? `<img src="${esc(r)}" alt="" data-act="zoom">` : `<img data-img="${esc(r)}" alt="" data-act="zoom">`).join('')}</div>`;
+}
+function compressImage(file, max = 1600) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file); const im = new Image();
+    im.onload = () => {
+      const k = Math.min(1, max / Math.max(im.width, im.height));
+      const cv = document.createElement('canvas'); cv.width = Math.round(im.width * k); cv.height = Math.round(im.height * k);
+      cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url);
+      canvasToBlob(cv).then(res, rej);
+    };
+    im.onerror = () => { URL.revokeObjectURL(url); rej(new Error('画像を読み込めません')); };
+    im.src = url;
+  });
+}
+// WebP で書き出す。対応していないブラウザ（iPhone の Safari など）は PNG が返るので JPEG で書き直す
+function canvasToBlob(cv) {
+  return new Promise((res, rej) => cv.toBlob(b => {
+    if (b && b.type === 'image/webp') return res(b);
+    cv.toBlob(j => j ? res(j) : rej(new Error('画像の変換に失敗')), 'image/jpeg', 0.85);
+  }, 'image/webp', 0.85));
+}
+async function storeImage(file) { const b = await compressImage(file); const id = 'i' + uid(); await idbPut('img', id, b); return id; }
+async function gcImages() {
+  const used = new Set(); D.cards.forEach(c => [...(c.qi || []), ...(c.ai || [])].forEach(r => used.add(r)));
+  for (const k of await idbKeys('img')) if (!used.has(k)) await idbDel('img', k);
+}
+function dropCardImages(c) { [...(c.qi || []), ...(c.ai || [])].filter(r => !isUrl(r)).forEach(r => idbDel('img', r)); }
+
+/* ============================================================
+   データモデル
+   ============================================================ */
+function newSRS() { return { st: 'new', due: 0, ivl: 0, S: 0, d: 0, last: 0, step: 0, reps: 0, lapses: 0 }; }
+function makeCard(o) {
+  return {
+    id: uid(), deck: o.deck, type: o.type || 'flash', q: o.q || '', a: o.a || '', ch: o.ch || [], ex: o.ex || '',
+    tags: o.tags || [], qi: o.qi || [], ai: o.ai || [], created: Date.now() + (o._i || 0), s: newSRS(),
+    st: { ok: 0, ng: 0, last: 0, lastNg: 0 }, flag: false, susp: false
+  };
+}
+function reverseOf(o) { return { ...o, q: o.a.split(/\s*[|｜]\s*/).join(' / '), a: o.q, qi: o.ai || [], ai: o.qi || [], ch: [], type: o.type === 'choice' ? 'choice' : o.type, tags: [...(o.tags || []), '逆'] }; }
+const byId = id => D.cards.find(c => c.id === id);
+const deckById = id => D.decks.find(d => d.id === id);
+const deckName = id => (deckById(id) || {}).name || '（不明）';
+function ensureDeck(name) {
+  name = (name || '').trim() || '未分類';
+  let d = D.decks.find(x => x.name === name);
+  if (!d) { d = { id: 'd' + uid(), name, created: Date.now() }; D.decks.push(d); }
+  return d.id;
+}
+function seed() {
+  const deck = ensureDeck('サンプル：使い方');
+  const items = [
+    { type: 'flash', q: 'このアプリの基本の使い方は？', a: '答えを見て「覚えた / 覚えてない」を押すだけ', ex: 'キーボードなら <Space> で答えを表示、<1> 覚えてない、<2> 覚えた。' },
+    { type: 'flash', q: 'apple', a: 'りんご', tags: ['英単語'] },
+    { type: 'flash', q: 'ephemeral', a: 'はかない、つかの間の', tags: ['英単語'] },
+    { type: 'choice', q: '日本で一番長い川は？', a: '信濃川', ch: ['利根川', '石狩川', '北上川'], ex: '全長367km。' },
+    { type: 'input', q: '北海道の道庁所在地は？（記述式）', a: '札幌|さっぽろ|札幌市', ex: '別解は「|」で区切って登録できます。ひらがな・カタカナ・全角半角の違いは自動で吸収します。' },
+    { type: 'flash', q: '画像も問題にできる？', a: 'できる。追加・編集画面で画像を貼り付け（Ctrl+V）・ドラッグ・選択', ex: '取り込みでは Markdown の ![](画像URL) も読み込めます。' }
+  ];
+  items.forEach((o, i) => D.cards.push(makeCard({ ...o, deck, _i: i })));
+}
+
+/* 日付（日付の切り替わりは設定の時刻。既定は午前4時） */
+function shifted(t = Date.now()) { return new Date(t - D.settings.dayStartHour * HOUR); }
+function ymd(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+const dayKey = (t = Date.now()) => ymd(shifted(t));
+function dayEnd(t = Date.now()) { const d = shifted(t); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + 1); return d.getTime() + D.settings.dayStartHour * HOUR; }
+function today() { const k = dayKey(); return D.daily[k] || (D.daily[k] = { cnt: 0, ok: 0, ng: 0, time: 0, nd: {}, rd: {} }); }
+const dayCnt = k => (D.daily[k] || {}).cnt || 0;
+
+/* ============================================================
+   スケジューリング：FSRS-5（Free Spaced Repetition Scheduler）
+   記憶を2つの量でモデル化する。
+     安定度 S … 記憶率が90%まで下がるのにかかる日数
+     難易度 d … 1〜10。高いほど覚えにくいカード
+   経過 t 日後の記憶率（忘却曲線）は R(t) = (1 + F·t/S)^-0.5。
+   次の復習は R が「目標記憶率」まで下がる日に置く（忘れかける直前に復習する）。
+   判定が2択なので、FSRS の評価は 1(Again) と 3(Good) だけを使う。
+   パラメータは FSRS-5 の既定値（数億件の復習ログから学習されたもの）。
+   ============================================================ */
+const W = [0.40255, 1.18385, 3.173, 15.69105, 7.1949, 0.5345, 1.4604, 0.0046, 1.54575, 0.1192, 1.01925, 1.9395, 0.11, 0.29605, 2.2698, 0.2315, 2.9898, 0.51655, 0.6621];
+const DECAY = -0.5, FACTOR = 19 / 81;                     // R(S, S) = 0.9 になるよう決まる定数
+const clampD = d => Math.min(10, Math.max(1, d));
+const retr = (t, S) => Math.pow(1 + FACTOR * Math.max(0, t) / S, DECAY);
+const initS = g => W[g - 1];
+const initD = g => clampD(W[4] - Math.exp(W[5] * (g - 1)) + 1);
+// 難易度：Again で上がり Good で下がる。10に近いほど動きにくく、少しずつ初期値へ戻る（平均回帰）
+const nextD = (d, g) => clampD(W[7] * initD(4) + (1 - W[7]) * (d - W[6] * (g - 3) * (10 - d) / 9));
+// 思い出せたとき：難しいカード・すでに安定したカードほど伸びにくく、忘れかけ（R が低い）で思い出すほど大きく伸びる
+const recallS = (d, S, R) => S * (1 + Math.exp(W[8]) * (11 - d) * Math.pow(S, -W[9]) * (Math.exp(W[10] * (1 - R)) - 1));
+// 忘れたとき：安定度は下がるが、元の安定度が高いほど多く残る（前より高くはならない）
+const forgetS = (d, S, R) => Math.min(S, W[11] * Math.pow(d, -W[12]) * (Math.pow(S + 1, W[13]) - 1) * Math.exp(W[14] * (1 - R)));
+// 同じ日のうちの再確認（短期記憶）
+const shortS = (S, g) => S * Math.exp(W[17] * (g - 3 + W[18]));
+function seededRand(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; }
+  h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909);
+  return ((h ^= h >>> 16) >>> 0) / 4294967296;
+}
+// 目標記憶率 r に下がるまでの日数。同じ日に復習が固まらないよう少しだけ揺らす（FSRS 標準の fuzz）
+function ivlFor(S, seed) {
+  const r = D.settings.retention, max = D.settings.maxIvl;
+  let ivl = Math.min(max, Math.max(1, Math.round(S / FACTOR * (Math.pow(r, 1 / DECAY) - 1))));
+  if (ivl < 2.5 || !seed) return ivl;
+  let delta = 1;
+  for (const [a, b, f] of [[2.5, 7, .15], [7, 20, .1], [20, Infinity, .05]]) delta += f * Math.max(Math.min(ivl, b) - a, 0);
+  const lo = Math.max(2, Math.round(ivl - delta)), hi = Math.min(max, Math.round(ivl + delta));
+  return Math.floor(seededRand(seed) * (hi - lo + 1) + lo);
+}
+function schedule(s0, ok, now = Date.now(), seed = '') {
+  const Sg = D.settings, s = { ...s0 }, g = ok ? 3 : 1, was = s.st;
+  if (was === 'new' || !s.S) { s.S = initS(g); s.d = initD(g); }
+  else if (dayKey(s.last) === dayKey(now)) { s.d = nextD(s.d, g); s.S = shortS(s.S, g); }
+  else {
+    const R = retr((now - s.last) / DAY, s.S);
+    const S2 = ok ? recallS(s.d, s.S, R) : forgetS(s.d, s.S, R);
+    s.d = nextD(s.d, g); s.S = S2;
+  }
+  s.S = Math.min(Math.max(s.S, 0.01), 36500);
+  s.reps++; s.last = now;
+  const toReview = () => { s.st = 'review'; s.step = 0; s.ivl = ivlFor(s.S, seed && seed + ':' + s.reps); s.due = dayEnd(now) + (s.ivl - 1) * DAY; };
+  const steps = st => st === 'relearn' ? Sg.relearnSteps : Sg.learnSteps;
+  if (!ok) {
+    if (was === 'review') s.lapses++;
+    s.st = was === 'review' || was === 'relearn' ? 'relearn' : 'learn';
+    const st = steps(s.st);
+    if (st.length) { s.step = 0; s.due = now + st[0] * MIN; } else toReview();
+  } else if (was === 'learn' || was === 'relearn') {
+    const st = steps(was);
+    if (s.step + 1 < st.length) { s.step++; s.due = now + st[s.step] * MIN; } else toReview();
+  } else toReview();   // 新規で即「覚えた」（初見で知っていた）／復習で「覚えた」
+  return s;
+}
+// 今この瞬間の記憶率（未学習は null）
+const cardR = (c, now = Date.now()) => c.s.st === 'new' || !c.s.S || !c.s.last ? null : retr((now - c.s.last) / DAY, c.s.S);
+// 旧方式（SM-2 簡易版）のデータを FSRS の状態へ移す
+function migrateSRS() {
+  D.cards.forEach(c => {
+    const s = c.s; if (s.S != null && s.d != null) return;
+    if (s.st === 'new') Object.assign(s, { S: 0, d: 0, last: 0 });
+    else { s.S = Math.max(0.5, s.ivl || W[0]); s.d = clampD(5 + (2.5 - (s.ease || 2.5)) * 5); s.last = s.st === 'review' ? s.due - s.ivl * DAY : Date.now(); }
+    delete s.ease;
+  });
+}
+function fmtDays(d) {
+  if (d < 1) return Math.max(1, Math.round(d * 24)) + '時間';
+  if (d < 30) return Math.round(d) + '日';
+  if (d < 365) return (d / 30).toFixed(d < 60 ? 1 : 0) + 'か月';
+  return (d / 365).toFixed(1) + '年';
+}
+function ivlLabel(s, now = Date.now()) {
+  if (s.st === 'review') {
+    const d = s.ivl;
+    if (d < 30) return d + '日後';
+    if (d < 365) return (d / 30).toFixed(d < 60 ? 1 : 0) + 'か月後';
+    return (d / 365).toFixed(1) + '年後';
+  }
+  const m = Math.max(1, Math.round((s.due - now) / MIN));
+  return m < 60 ? m + '分後' : Math.round(m / 60) + '時間後';
+}
+
+/* 判定まわり */
+function norm(s) {
+  return String(s || '').normalize('NFKC').toLowerCase()
+    .replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60))
+    .replace(/[\s、。，．,.!?！？「」『』・'"`]/g, '');
+}
+const alts = a => String(a || '').split(/\s*[|｜]\s*/).filter(Boolean);
+const primary = a => alts(a)[0] || '';
+function lev(a, b) {
+  const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+  let p = Array.from({ length: n + 1 }, (_, j) => j);
+  for (let i = 1; i <= m; i++) { const c = [i]; for (let j = 1; j <= n; j++) c[j] = Math.min(p[j] + 1, c[j - 1] + 1, p[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); p = c; }
+  return p[n];
+}
+function judge(val, card) {
+  const v = norm(val); if (!v) return { ok: false };
+  const cand = new Set();
+  alts(card.a).forEach(x => { cand.add(norm(x)); cand.add(norm(x.replace(/[(（][^)）]*[)）]/g, ''))); });
+  cand.delete('');
+  if (cand.has(v)) return { ok: true };
+  // 「はかない、つかの間の」のように意味が並ぶ答えは、どれか1つ書ければ正解
+  const parts = alts(card.a).flatMap(x => x.replace(/[(（][^)）]*[)）]/g, '').split(/[、，,;；／/]/)).map(norm).filter(p => p.length >= 2);
+  if (parts.length > 1 && parts.includes(v)) return { ok: true, part: true };
+  let best = 99; cand.forEach(x => best = Math.min(best, lev(v, x)));
+  const tol = v.length >= 8 ? 2 : v.length >= 4 ? 1 : 0;
+  return { ok: false, close: best <= tol };
+}
+function buildChoices(c) {
+  const correct = primary(c.a);
+  let wrong = (c.ch || []).map(x => x.trim()).filter(x => x && x !== correct);
+  if (wrong.length < 3 && D.settings.autoChoice) {
+    const pool = shuffle(D.cards.filter(x => x.id !== c.id)).sort((a, b) => (b.deck === c.deck) - (a.deck === c.deck));
+    for (const x of pool) { if (wrong.length >= 3) break; const v = primary(x.a); if (v && v !== correct && !wrong.includes(v) && v.length < 80) wrong.push(v); }
+  }
+  wrong = shuffle(wrong).slice(0, 5);
+  return shuffle([{ t: correct, ok: true }, ...wrong.map(t => ({ t, ok: false }))]);
+}
+const isWeak = c => c.s.lapses >= 3 || (c.s.d >= 9 && c.s.lapses >= 1) || (c.st.ng >= 3 && c.st.ng / (c.st.ok + c.st.ng) >= 0.4);
+
+/* ============================================================
+   ルーティング / 描画
+   ============================================================ */
+let route = 'home', RP = {};
+function go(r, p = {}) {
+  if (route === 'study' && r !== 'study' && SES && !SES.finished) SES = null;
+  route = r; RP = p; render(); scrollTo(0, 0);
+}
+function render() {
+  $$('#nav button, #tabbar button').forEach(b => b.classList.toggle('on', b.dataset.go === route || (route === 'practice' && b.dataset.go === 'home')));
+  document.body.classList.toggle('studying', route === 'study');
+  const V = { home: vHome, photo: vPhoto, study: vStudy, practice: vPracticeSetup, add: vAdd, browse: vBrowse, import: vImport, stats: vStats, settings: vSettings }[route] || vHome;
+  $('#app').innerHTML = V();
+  after[route] && after[route]();
+  hydrate($('#app'));
+}
+const after = {};
+
+/* ---------- ホーム ---------- */
+function allowance(deckId) {
+  const t = today(), S = D.settings;
+  return { n: Math.max(0, S.newPerDay - (t.nd[deckId] || 0)), r: Math.max(0, S.maxReviews - (t.rd[deckId] || 0)) };
+}
+function deckCounts(deckIds) {
+  const now = Date.now(), end = dayEnd(); let nw = 0, lr = 0, rv = 0, total = 0;
+  for (const id of deckIds) {
+    const cs = D.cards.filter(c => c.deck === id && !c.susp); total += cs.length;
+    const al = allowance(id);
+    nw += Math.min(al.n, cs.filter(c => c.s.st === 'new').length);
+    rv += Math.min(al.r, cs.filter(c => c.s.st === 'review' && c.s.due <= now).length);
+    lr += cs.filter(c => (c.s.st === 'learn' || c.s.st === 'relearn') && c.s.due < end).length;
+  }
+  return { nw, lr, rv, total, sum: nw + lr + rv };
+}
+function streak() {
+  let n = 0; const d = shifted(); d.setHours(12, 0, 0, 0);
+  if (!dayCnt(ymd(d))) d.setDate(d.getDate() - 1);
+  while (dayCnt(ymd(d))) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+function vHome() {
+  const t = today(), all = deckCounts(D.decks.map(d => d.id));
+  const acc = t.ok + t.ng ? Math.round(t.ok / (t.ok + t.ng) * 100) + '%' : '—';
+  const tiles = [['今日の学習', t.cnt + '<small class="muted" style="font-size:13px"> 枚</small>'], ['正答率（今日）', acc], ['連続学習', streak() + '<small class="muted" style="font-size:13px"> 日</small>'], ['カード総数', D.cards.length]];
+  return `${bannersHTML()}
+  <div class="hero">
+    <div class="panel hero-go">
+      <div><div class="sub">今日やる分</div>
+      <div class="counts"><span class="n-new">${all.nw}<small>新規</small></span><span class="n-learn">${all.lr}<small>学習中</small></span><span class="n-rev">${all.rv}<small>復習</small></span></div></div>
+      <div class="spacer"></div>
+      <button class="btn primary big" data-act="study" data-deck="*" ${all.sum ? '' : 'disabled'}>${all.sum ? 'まとめて学習する' : '今日の分は完了'}</button>
+    </div>
+    <div class="quick">
+    <button class="btn primary" data-go="photo">📷 写真で追加</button>
+    <button class="btn" data-go="add">✎ 文字で追加</button>
+    <button class="btn" data-go="import">⇩ 取り込み</button>
+    </div>
+    <div class="tiles">${tiles.map(([k, v]) => `<div class="panel tile"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('')}</div>
+  </div>
+  <div class="sec-h">
+    <h2>デッキ</h2><div class="spacer"></div>
+    <form id="fNewDeck" class="inline"><input name="name" placeholder="新しいデッキ名" required><button class="btn">作成</button></form>
+  </div>
+  ${D.decks.length ? `<div class="decks">${D.decks.map(deckCardHTML).join('')}</div>` :
+      `<div class="panel empty">まだデッキがありません。<br>上で作成するか、<button class="link" data-go="import">取り込み</button>から単語リストを読み込んでください。</div>`}`;
+}
+function deckCardHTML(d) {
+  const c = deckCounts([d.id]);
+  const weak = D.cards.filter(x => x.deck === d.id && isWeak(x)).length;
+  return `<div class="panel deck">
+    <div class="deck-h"><div class="deck-name">${esc(d.name)}</div><button class="menu-btn" data-act="deckMenu" data-deck="${d.id}" title="デッキの操作">⋯</button></div>
+    <div class="deck-c">
+      <div><b class="n-new">${c.nw}</b><span>新規</span></div>
+      <div><b class="n-learn">${c.lr}</b><span>学習中</span></div>
+      <div><b class="n-rev">${c.rv}</b><span>復習</span></div>
+      <div class="spacer"></div>
+      <div style="text-align:right"><b>${c.total}</b><span>枚${weak ? ` ・ 苦手 ${weak}` : ''}</span></div>
+    </div>
+    <div class="deck-a">
+      <button class="btn primary sm" data-act="study" data-deck="${d.id}" ${c.sum ? '' : 'disabled'}>${c.sum ? '学習する' : '今日は完了'}</button>
+      <button class="btn sm" data-go="practice" data-deck="${d.id}">練習モード</button>
+      <button class="btn sm" data-go="add" data-deck="${d.id}">＋ 追加</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- 学習セッション ---------- */
+let SES = null;
+function startSRS(deckSel) {
+  const ids = deckSel === '*' ? D.decks.map(d => d.id) : [deckSel];
+  const now = Date.now(); let revs = [], news = [];
+  for (const id of ids) {
+    const cs = D.cards.filter(c => c.deck === id && !c.susp), al = allowance(id);
+    revs.push(...cs.filter(c => c.s.st === 'review' && c.s.due <= now).sort((a, b) => cardR(a, now) - cardR(b, now)).slice(0, al.r));   // 忘れかけている順
+    news.push(...cs.filter(c => c.s.st === 'new').sort((a, b) => a.created - b.created).slice(0, al.n));
+  }
+  revs.sort((a, b) => cardR(a, now) - cardR(b, now));
+  // 新規カードを復習の中に均等に混ぜる
+  const q = []; const gap = news.length ? Math.max(1, Math.floor(revs.length / news.length)) : 0;
+  let ni = 0; revs.forEach((c, i) => { q.push(c.id); if (gap && (i + 1) % gap === 0 && ni < news.length) q.push(news[ni++].id); });
+  while (ni < news.length) q.push(news[ni++].id);
+  SES = { mode: 'srs', decks: new Set(ids), deckSel, queue: q, pref: 'auto', undo: [], last: null, done: 0 };
+  route = 'study'; nextCard(); scrollTo(0, 0);
+}
+function startPractice(ids, pref = 'auto', title = '') {
+  if (!ids.length) return toast('対象のカードがありません');
+  SES = { mode: 'practice', queue: [...ids], total: ids.length, pos: 0, pref, undo: [], results: [], title, last: null };
+  route = 'study'; nextCard(); scrollTo(0, 0);
+}
+function nextCard() {
+  const now = Date.now(); let pick = null;
+  if (SES.mode === 'srs') {
+    const pool = D.cards.filter(c => SES.decks.has(c.deck) && !c.susp && (c.s.st === 'learn' || c.s.st === 'relearn')).sort((a, b) => a.s.due - b.s.due);
+    const due = pool.filter(c => c.s.due <= now);
+    const valid = c => c && !c.susp && (c.s.st === 'new' || (c.s.st === 'review' && c.s.due <= now));
+    const firstDue = due.find(c => c.id !== SES.last);
+    if (firstDue) pick = firstDue;
+    while (!pick && SES.queue.length) { const c = byId(SES.queue.shift()); if (valid(c)) pick = c; }
+    if (!pick && due.length) pick = due[0];
+    if (!pick) pick = pool.find(c => c.s.due <= now + 20 * MIN) || null;   // 少し先の学習中カードを前倒し
+  } else {
+    while (!pick && SES.queue.length) pick = byId(SES.queue.shift());
+    if (pick) SES.pos++;
+  }
+  if (!pick) { SES.finished = true; flush(); render(); return; }
+  show(pick);
+}
+function show(c) {
+  Object.assign(SES, { cur: c.id, phase: 'question', correct: null, picked: null, input: '', close: false, t0: Date.now(), finished: false });
+  let f = SES.pref === 'auto' ? c.type : SES.pref;
+  if (f === 'choice') { SES.opts = buildChoices(c); if (SES.opts.length < 2) f = 'flash'; }
+  if (f !== 'flash' && !primary(c.a)) f = 'flash';   // 答えが写真だけのカードは暗記カードとして出す
+  SES.f = f;
+  render();
+}
+function reveal() { if (SES.phase !== 'question') return; SES.phase = 'answered'; render(); }
+function pick(i) { if (SES.phase !== 'question' || !SES.opts[i]) return; SES.picked = i; SES.correct = SES.opts[i].ok; SES.phase = 'answered'; render(); }
+function submitInput(val) {
+  if (SES.phase !== 'question') return;
+  const j = judge(val, byId(SES.cur)); Object.assign(SES, { input: val, correct: j.ok, close: !!j.close, phase: 'answered' }); render();
+}
+function commit(ok) {
+  if (!SES || SES.phase !== 'answered') return;
+  const c = byId(SES.cur); if (!c) return nextCard();
+  const t = today(), now = Date.now(); let pr = null, rv = false;
+  SES.undo.push({ card: clone(c), day: clone(t), dk: dayKey(), queue: [...SES.queue], logLen: D.log.length, res: SES.results ? SES.results.length : 0, pos: SES.pos });
+  if (SES.undo.length > 50) SES.undo.shift();
+  t.cnt++; t.time += Math.min(now - SES.t0, 120000); ok ? t.ok++ : t.ng++;
+  ok ? c.st.ok++ : (c.st.ng++, c.st.lastNg = now); c.st.last = now;
+  if (SES.mode === 'srs') {
+    const was = c.s.st; pr = cardR(c, now); rv = was === 'review' && dayKey(c.s.last) !== dayKey(now);
+    c.s = schedule(c.s, ok, now, c.id);
+    if (was === 'new') t.nd[c.deck] = (t.nd[c.deck] || 0) + 1;
+    if (was === 'review') t.rd[c.deck] = (t.rd[c.deck] || 0) + 1;
+    if (was === 'review' && !ok && c.s.lapses === D.settings.leech) toast('このカードは何度も忘れています。「苦手」として統計に表示されます');
+  } else SES.results.push({ id: c.id, ok });
+  D.log.push({ c: c.id, t: now, ok, m: SES.mode, ...(rv ? { r: Math.round(pr * 1000) / 1000 } : {}) }); if (D.log.length > 20000) D.log.splice(0, D.log.length - 20000);
+  SES.last = c.id; save(); nextCard();
+}
+function undo() {
+  const u = SES && SES.undo.pop(); if (!u) return toast('元に戻せる操作がありません');
+  const c = byId(u.card.id); if (!c) return;
+  Object.assign(c, u.card); D.daily[u.dk] = u.day; D.log.length = u.logLen; SES.queue = u.queue;
+  if (SES.results) SES.results.length = u.res; if (u.pos != null) SES.pos = u.pos;
+  save(); show(c); toast('1つ前に戻しました');
+}
+function srsRemaining() {
+  const now = Date.now(), end = dayEnd(); let nw = 0, rv = 0;
+  SES.queue.forEach(id => { const c = byId(id); if (!c || c.susp) return; if (c.s.st === 'new') nw++; else if (c.s.st === 'review' && c.s.due <= now) rv++; });
+  const lr = D.cards.filter(c => SES.decks.has(c.deck) && !c.susp && (c.s.st === 'learn' || c.s.st === 'relearn') && c.s.due < end).length;
+  return { nw, lr, rv };
+}
+function vStudy() {
+  if (!SES) { route = 'home'; return vHome(); }
+  if (SES.finished) return vFinish();
+  const c = byId(SES.cur); if (!c) { setTimeout(nextCard); return ''; }
+  const ans = SES.phase === 'answered', f = SES.f, srs = SES.mode === 'srs';
+  let head;
+  if (srs) { const r = srsRemaining(); head = `<div class="counts"><span class="n-new">${r.nw}<small>新規</small></span><span class="n-learn">${r.lr}<small>学習中</small></span><span class="n-rev">${r.rv}<small>復習</small></span></div>`; }
+  else head = `<div class="counts">${SES.pos} <small>/ ${SES.total}</small></div>`;
+  const prefSel = `<select id="prefSel" style="width:auto;padding:5px 8px;font-size:13px" title="出題形式">
+    ${[['auto', 'カードの形式で'], ['flash', 'すべて暗記カード'], ['choice', 'すべて選択式'], ['input', 'すべて記述式']].map(([v, l]) => `<option value="${v}" ${SES.pref === v ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+
+  let body = '';
+  if (f === 'flash' && ans) body = `<div class="divider"></div><div class="atext">${rich(c.a)}</div>${imgsHTML(c.ai)}${expHTML(c)}`;
+  if (f === 'choice') {
+    body = `<div class="opts">${SES.opts.map((o, i) => {
+      const cls = !ans ? '' : o.ok ? 'ok' : i === SES.picked ? 'ng' : 'dim';
+      return `<button class="opt ${cls}" data-act="pick" data-i="${i}" ${ans ? 'disabled' : ''}><span class="k">${i + 1}</span><span>${rich(o.t)}</span></button>`;
+    }).join('')}</div>`;
+    if (ans) body += verdictHTML() + (c.ai && c.ai.length ? imgsHTML(c.ai) : '') + expHTML(c);
+  }
+  if (f === 'input') {
+    if (!ans) body = `<form id="fAns" class="ansrow"><input id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="答えを入力して Enter"><button class="btn primary">解答</button></form>
+      <div style="margin-top:6px"><button class="link" data-act="dontKnow">わからない</button></div>`;
+    else body = verdictHTML() + `<div class="yours">あなたの答え：${SES.input ? (SES.correct ? esc(SES.input) : `<s>${esc(SES.input)}</s>`) : '（未回答）'}</div>
+      <div class="divider" style="margin:14px 0"></div><div class="atext">${alts(c.a).map(rich).join(' <span class="muted">／</span> ')}</div>${imgsHTML(c.ai)}${expHTML(c)}`;
+  }
+
+  const pv = ok => srs ? `<small>${ivlLabel(schedule(c.s, ok, Date.now(), c.id))}</small>` : '';
+  let acts;
+  if (!ans) acts = f === 'flash' ? `<button class="judge go" data-act="reveal">答えを見る<small>Space</small></button>` : '';
+  else if (f === 'flash') acts = `<button class="judge ng" data-act="commit" data-ok="0">✕ 覚えてない${pv(false) || '<small>1</small>'}</button><button class="judge ok" data-act="commit" data-ok="1">○ 覚えた${pv(true) || '<small>2</small>'}</button>`;
+  else acts = `<button class="judge ${SES.correct ? 'ok' : 'ng'}" data-act="commit" data-ok="${SES.correct ? 1 : 0}">次へ${pv(SES.correct) || '<small>Enter</small>'}</button>`;
+
+  const keys = !ans ? (f === 'flash' ? '<kbd>Space</kbd> 答えを見る' : f === 'choice' ? '<kbd>1</kbd>〜<kbd>' + SES.opts.length + '</kbd> で選択' : '<kbd>Enter</kbd> 解答')
+    : (f === 'flash' ? '<kbd>1</kbd> 覚えてない ・ <kbd>2</kbd>/<kbd>Space</kbd> 覚えた' : '<kbd>Enter</kbd> 次へ ・ <kbd>J</kbd> 判定を変更');
+
+  return `<div class="study">
+    <div class="st-top"><button class="btn sm" data-act="endStudy">← 終了</button>${head}<div class="spacer"></div>${prefSel}</div>
+    ${srs ? '' : `<div class="progress"><i style="width:${(SES.pos - 1) / SES.total * 100}%"></i></div>`}
+    <article class="panel qcard" id="qcard">
+      <div class="qmeta"><span>${esc(deckName(c.deck))}</span><span class="badge">${TYPE_LABEL[f]}</span>${srs ? `<span class="badge">${{ new: '新規', learn: '学習中', relearn: '再学習', review: '復習' }[c.s.st]}</span>` : ''}${c.flag ? '<span class="flag-on">★</span>' : ''}${(c.tags || []).map(x => `<span class="tag">${esc(x)}</span>`).join('')}</div>
+      ${c.q ? `<div class="qtext">${rich(c.q)}</div>` : ''}${imgsHTML(c.qi)}
+      ${body}
+    </article>
+    <div class="acts">${acts}</div>
+    <div class="st-tools">
+      ${ans && f !== 'flash' ? `<button class="link" data-act="override">判定を「${SES.correct ? '不正解' : '正解'}」に変更</button>` : ''}
+      <button class="link" data-act="undo">↶ 元に戻す</button>
+      <button class="link" data-act="editCur">✎ 編集</button>
+      <button class="link ${c.flag ? 'flag-on' : ''}" data-act="flagCur">${c.flag ? '★ フラグ解除' : '☆ フラグ'}</button>
+      <button class="link" data-act="suspCur">⏸ 出題しない</button>
+    </div>
+    <div class="keys">${keys} ・ <kbd>U</kbd> 元に戻す ・ <kbd>E</kbd> 編集</div>
+  </div>`;
+}
+function verdictHTML() {
+  return SES.correct ? `<div class="verdict ok">○ 正解</div>`
+    : `<div class="verdict ng">✕ 不正解${SES.close ? ' <small>惜しい！ 表記ゆれなら「判定を変更」で正解にできます</small>' : ''}</div>`;
+}
+function expHTML(c) { return c.ex ? `<div class="exp"><b>解説</b>　${rich(c.ex)}</div>` : ''; }
+after.study = () => {
+  const i = $('#ans'); if (i) i.focus();
+  const qc = $('#qcard'); if (!qc) return;
+  // スマホ：カードをタップで答えを表示
+  qc.addEventListener('click', e => { if (SES && SES.phase === 'question' && SES.f === 'flash' && !e.target.closest('img,button,a,input,select')) reveal(); });
+  let x0 = null;   // スマホ：左右スワイプで判定
+  qc.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+  qc.addEventListener('touchend', e => {
+    if (x0 == null || !SES || SES.phase !== 'answered') return;
+    const dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) < 70) return;
+    if (SES.f === 'flash') commit(dx > 0); else if (dx > 0) commit(SES.correct);
+  });
+};
+function vFinish() {
+  if (SES.mode === 'srs') {
+    const t = today(); const upcoming = D.cards.filter(c => SES.decks.has(c.deck) && !c.susp && c.s.st !== 'new');
+    const tomorrow = upcoming.filter(c => c.s.due < dayEnd() + DAY).length;
+    return `<div class="study"><div class="panel finish">
+      <div style="font-size:40px">🎉</div><h1 style="margin:8px 0">今日の分は完了です</h1>
+      <p class="sub">今日の学習 ${t.cnt} 枚 ・ 正答率 ${t.ok + t.ng ? Math.round(t.ok / (t.ok + t.ng) * 100) : 0}% ・ 明日の復習予定 ${tomorrow} 枚</p>
+      <div class="row" style="justify-content:center;margin-top:18px">
+        <button class="btn" data-go="home">ホームへ</button>
+        <button class="btn primary" data-go="practice" data-deck="${SES.deckSel === '*' ? '' : SES.deckSel}">練習モードで続ける</button>
+      </div></div></div>`;
+  }
+  const r = SES.results, ok = r.filter(x => x.ok).length, wrong = r.filter(x => !x.ok).map(x => byId(x.id)).filter(Boolean);
+  return `<div class="study"><div class="panel finish">
+    <div class="sub">${esc(SES.title || '練習モード')}の結果</div>
+    <div class="big">${ok} <span class="muted" style="font-size:24px">/ ${r.length}</span></div>
+    <div class="sub">正答率 ${r.length ? Math.round(ok / r.length * 100) : 0}%</div>
+    <div class="row" style="justify-content:center;margin-top:18px">
+      <button class="btn" data-go="home">ホームへ</button>
+      ${wrong.length ? `<button class="btn primary" data-act="retryWrong">間違えた ${wrong.length} 問をもう一度</button>` : ''}
+    </div>
+    ${wrong.length ? `<div class="wrong-list">${wrong.map(c => `<div><b>${rich(c.q)}</b><br><span class="muted">→</span> ${rich(alts(c.a).join(' / '))}</div>`).join('')}</div>` : ''}
+  </div></div>`;
+}
+
+/* ---------- 練習モード設定 ---------- */
+const PR_SCOPE = [['all', 'すべて'], ['wrong', '一度でも間違えた'], ['recent', '最近7日で間違えた'], ['weak', '苦手カード'], ['flag', 'フラグ付き'], ['new', '未学習'], ['learned', '学習済み']];
+function practiceFilter(o) {
+  const tag = (o.tag || '').trim(); const wk = Date.now() - 7 * DAY;
+  return D.cards.filter(c => (!o.deck || c.deck === o.deck) && !c.susp && (!tag || (c.tags || []).includes(tag)) && ({
+    all: true, wrong: c.st.ng > 0, recent: c.st.lastNg > wk, weak: isWeak(c), flag: c.flag, new: c.s.st === 'new', learned: c.s.st !== 'new'
+  })[o.scope || 'all']);
+}
+function vPracticeSetup() {
+  const tags = [...new Set(D.cards.flatMap(c => c.tags || []))].sort();
+  return `<div style="max-width:560px;margin:0 auto">
+  <h1>練習モード</h1>
+  <p class="sub" style="margin-top:-8px">学習スケジュールには影響せず、好きな範囲を好きな形式で解けます。正誤の記録は残ります。</p>
+  <form id="fPractice" class="panel pad">
+    <label>デッキ<select name="deck"><option value="">すべてのデッキ</option>${D.decks.map(d => `<option value="${d.id}" ${RP.deck === d.id ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select></label>
+    <div class="grid2">
+      <label>出題範囲<select name="scope">${PR_SCOPE.map(([v, l]) => `<option value="${v}" ${RP.scope === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+      <label>タグ<select name="tag"><option value="">指定しない</option>${tags.map(t => `<option>${esc(t)}</option>`).join('')}</select></label>
+      <label>出題形式<select name="pref"><option value="auto">カードの形式で</option><option value="flash">すべて暗記カード</option><option value="choice">すべて選択式</option><option value="input">すべて記述式</option></select></label>
+      <label>問題数<select name="n"><option value="10">10問</option><option value="20" selected>20問</option><option value="50">50問</option><option value="0">全部</option></select></label>
+      <label>順番<select name="order"><option value="rand">ランダム</option><option value="seq">登録順</option><option value="forget">忘れかけている順</option><option value="weak">苦手な順</option></select></label>
+    </div>
+    <div class="row"><span class="sub" id="prCount"></span><div class="spacer"></div><button class="btn primary">開始</button></div>
+  </form></div>`;
+}
+after.practice = () => {
+  const f = $('#fPractice'); const upd = () => { const o = Object.fromEntries(new FormData(f)); $('#prCount').textContent = `対象 ${practiceFilter(o).length} 枚`; };
+  f.addEventListener('change', upd); upd();
+};
+
+/* ---------- カード編集フォーム（追加画面とダイアログで共用） ---------- */
+let FORM = { qi: [], ai: [] };
+function cardFormHTML(c, opt = {}) {
+  FORM = { qi: [...(c.qi || [])], ai: [...(c.ai || [])] };
+  return `<div id="cf">
+    <div class="form-grid">
+      <label>デッキ<select name="deck">${D.decks.map(d => `<option value="${d.id}" ${d.id === c.deck ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}<option value="__new">＋ 新しいデッキ…</option></select></label>
+      <label>形式<select name="type">${Object.entries(TYPE_LABEL).map(([v, l]) => `<option value="${v}" ${v === c.type ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+    </div>
+    <label>問題<textarea name="q" rows="3" placeholder="例：ephemeral">${esc(c.q)}</textarea></label>
+    <div class="imgzone" data-field="qi"></div>
+    <label><span class="lab-a">答え</span><textarea name="a" rows="2" placeholder="例：はかない、つかの間の">${esc(c.a)}</textarea></label>
+    <div class="imgzone" data-field="ai"></div>
+    <label class="only-choice">誤答の選択肢（1行に1つ。空欄なら他のカードの答えから自動で作ります）<textarea name="ch" rows="3">${esc((c.ch || []).join('\n'))}</textarea></label>
+    <label>解説（任意）<textarea name="ex" rows="2">${esc(c.ex)}</textarea></label>
+    <label>タグ（スペース区切り・任意）<input name="tags" value="${esc((c.tags || []).join(' '))}"></label>
+    ${opt.reverse ? `<label class="chk"><input type="checkbox" name="rev" ${opt.revOn ? 'checked' : ''}> 逆向きのカードも作る（答え → 問題）</label>` : ''}
+  </div>`;
+}
+function wireForm() {
+  const cf = $('#cf'); if (!cf) return;
+  const typeSel = $('[name=type]', cf);
+  const upd = () => {
+    const t = typeSel.value; $('.only-choice', cf).hidden = t !== 'choice';
+    $('.lab-a', cf).textContent = t === 'input' ? '答え（別解は | で区切る。例：札幌|さっぽろ）' : '答え';
+  };
+  typeSel.addEventListener('change', upd); upd();
+  $('[name=deck]', cf).addEventListener('change', e => {
+    if (e.target.value !== '__new') return;
+    const name = prompt('新しいデッキ名'); if (!name) { e.target.selectedIndex = 0; return; }
+    const id = ensureDeck(name); save();
+    e.target.insertAdjacentHTML('afterbegin', `<option value="${id}">${esc(name)}</option>`); e.target.value = id;
+  });
+  $$('.imgzone', cf).forEach(z => {
+    renderThumbs(z.dataset.field);
+    z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('drag'); });
+    z.addEventListener('dragleave', () => z.classList.remove('drag'));
+    z.addEventListener('drop', e => { e.preventDefault(); z.classList.remove('drag'); addImages([...e.dataTransfer.files], z.dataset.field); });
+  });
+  $$('textarea', cf).forEach(ta => {
+    ta.addEventListener('dragover', e => e.preventDefault());
+    ta.addEventListener('drop', e => { if (e.dataTransfer.files.length) { e.preventDefault(); addImages([...e.dataTransfer.files], ta.name === 'q' ? 'qi' : 'ai'); } });
+  });
+}
+function renderThumbs(field) {
+  const z = $(`#cf .imgzone[data-field="${field}"]`); if (!z) return;
+  z.innerHTML = FORM[field].map(r => `<span class="thumb">${isUrl(r) ? `<img src="${esc(r)}" alt="">` : `<img data-img="${esc(r)}" alt="">`}<button type="button" data-act="rmImg" data-field="${field}" data-id="${esc(r)}" title="削除">✕</button></span>`).join('')
+    + `<button type="button" class="btn sm" data-act="addImg" data-field="${field}">＋ ${field === 'qi' ? '問題' : '答え'}に画像</button><span class="hint">貼り付け（Ctrl+V）・ドラッグでも追加できます</span>`;
+  hydrate(z);
+}
+async function addImages(files, field) {
+  files = files.filter(f => f.type.startsWith('image/')); if (!files.length) return;
+  for (const f of files) { try { FORM[field].push(await storeImage(f)); } catch (e) { toast(e.message); } }
+  renderThumbs(field);
+}
+function readForm() {
+  const cf = $('#cf'), v = n => ($(`[name=${n}]`, cf) || {}).value || '';
+  return {
+    deck: v('deck'), type: v('type'), q: v('q').trim(), a: v('a').trim(), ex: v('ex').trim(),
+    ch: v('ch').split('\n').map(s => s.trim()).filter(Boolean), tags: v('tags').split(/[\s　]+/).filter(Boolean),
+    qi: [...FORM.qi], ai: [...FORM.ai], rev: !!($('[name=rev]', cf) || {}).checked
+  };
+}
+function validCard(o) {
+  if (!o.deck || o.deck === '__new') return 'デッキを選んでください';
+  if (!o.q && !o.qi.length) return '問題を入力してください';
+  if (!o.a && !o.ai.length) return '答えを入力してください';
+  return '';
+}
+
+/* ---------- 写真で追加（スマホ向け） ---------- */
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isStandalone = () => navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+function bannersHTML() {
+  let h = '';
+  if (isIOS && !isStandalone() && !D.hideInstall) h += `<div class="panel banner"><p><b>ホーム画面に追加して使ってください。</b><br>Safari の共有ボタン（□に↑）→「ホーム画面に追加」。Safari で開いたままだと、しばらく使わない間に iPhone がデータを消すことがあります。Safari とホーム画面のアプリはデータが別々なので、最初からホーム画面の方で使ってください。</p><button class="btn sm" data-act="hideInstall">閉じる</button></div>`;
+  if (D.cards.length >= 20 && D.cards.some(c => (c.qi || []).length + (c.ai || []).length) && Date.now() - (D.lastBackup || 0) > 14 * DAY)
+    h += `<div class="panel banner"><p>2週間以上バックアップしていません。写真はこの端末の中にしかないので、ときどき書き出しておくと安心です。</p><button class="btn sm primary" data-act="backup">バックアップ</button></div>`;
+  return h;
+}
+const thumb = list => !(list || []).length ? '' : isUrl(list[0]) ? `<img class="mini" src="${esc(list[0])}" alt="">` : `<img class="mini" data-img="${esc(list[0])}" alt="">`;
+
+// 撮影・選択した写真は保存するまでメモリに置く。orig は切り抜きをやり直すための元画像
+const PH = { q: [], a: [], qt: '', at: '', batch: null, busy: false };
+async function phItem(file) { const blob = await compressImage(file); return { orig: file, blob, url: URL.createObjectURL(blob) }; }
+function phDeck() {
+  let id = RP.deck && deckById(RP.deck) ? RP.deck : D.lastPhotoDeck;
+  if (!deckById(id)) id = (D.decks.find(d => d.name !== 'サンプル：使い方') || {}).id;
+  if (!id) { id = ensureDeck('写真カード'); save(); }
+  return id;
+}
+const deckSelHTML = cur => `<select id="phDeck">${D.decks.map(d => `<option value="${d.id}" ${d.id === cur ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}<option value="__new">＋ 新しいデッキ…</option></select>`;
+const phReadyNow = () => (PH.q.length || PH.qt.trim()) && (PH.a.length || PH.at.trim());
+function vPhoto() {
+  const deck = phDeck(); D.lastPhotoDeck = deck;
+  if (PH.batch) return vPhotoBatch(deck);
+  const n = D.cards.filter(c => c.deck === deck).length;
+  return `<div class="ph">
+    <label>追加先のデッキ${deckSelHTML(deck)}</label>
+    ${phSlot('q', '問題')}${phSlot('a', '答え')}
+    <details class="panel ph-text" ${PH.qt || PH.at ? 'open' : ''}><summary>文字も入れる（任意）</summary>
+      <label style="margin-top:10px">問題の文字<textarea id="phQt" rows="2" placeholder="例：この植物の名前は？">${esc(PH.qt)}</textarea></label>
+      <label>答えの文字<textarea id="phAt" rows="2">${esc(PH.at)}</textarea></label>
+    </details>
+    <div class="ph-save"><button class="btn primary big" data-act="phSave" ${phReadyNow() && !PH.busy ? '' : 'disabled'}>保存して次へ</button></div>
+    <p class="sub" style="text-align:center">このデッキ ${n} 枚 ・ 撮りためた写真は <button class="link" data-act="phBatchPick">アルバムからまとめて追加</button></p>
+  </div>`;
+}
+function phSlot(k, label) {
+  const list = PH[k];
+  return `<section class="panel ph-slot" id="slot-${k}">
+    <div class="ph-h"><b>${label}の写真</b>${list.length ? `<span class="badge">${list.length}枚</span>` : ''}</div>
+    ${list.map((p, i) => `<div class="ph-img"><img src="${p.url}" alt="" data-act="zoom"><div class="ph-tools">
+      <button class="btn sm" data-act="phEdit" data-k="${k}" data-i="${i}">✂ 切り抜き・回転</button>
+      <button class="btn sm danger" data-act="phDel" data-k="${k}" data-i="${i}">削除</button></div></div>`).join('')}
+    <div class="ph-add">
+      <button class="btn ${list.length ? '' : 'primary'}" data-act="phShot" data-k="${k}">📷 ${list.length ? 'もう1枚' : '撮影'}</button>
+      <button class="btn" data-act="phPick" data-k="${k}">🖼 アルバム</button>
+      ${k === 'a' && PH.q.length ? `<button class="btn" data-act="phSame">問題の写真から切り抜く</button>` : ''}
+    </div></section>`;
+}
+after.photo = () => {
+  $('#phDeck').addEventListener('change', e => {
+    let id = e.target.value;
+    if (id === '__new') { const n = prompt('新しいデッキ名'); if (!n || !n.trim()) return render(); id = ensureDeck(n); }
+    RP = { deck: id }; D.lastPhotoDeck = id; save(); render();
+  });
+  const qt = $('#phQt'), at = $('#phAt');
+  if (qt) {
+    qt.addEventListener('input', e => { PH.qt = e.target.value; phReady(); });
+    at.addEventListener('input', e => { PH.at = e.target.value; phReady(); });
+  }
+};
+function phReady() { const b = $('[data-act=phSave]'); if (b) b.disabled = !phReadyNow() || PH.busy; }
+async function phAddFiles(files, k) {
+  if (!files.length) return;
+  PH.busy = true; toast('写真を読み込み中…', 1500);
+  for (const f of files) { try { PH[k].push(await phItem(f)); } catch (e) { toast(e.message); } }
+  PH.busy = false;
+  if (route !== 'photo') return;
+  render();
+  // 問題を撮ったら答えの枠へ、答えを撮ったら保存ボタンへ
+  const next = k === 'q' && !PH.a.length ? '#slot-a' : k === 'a' ? '.ph-save' : null;
+  if (next) setTimeout(() => { const el = $(next); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 60);
+}
+async function phEdit(k, i) {
+  const p = PH[k][i]; if (!p) return;
+  const b = await cropEditor(p.orig); if (!b) return;
+  URL.revokeObjectURL(p.url); p.blob = b; p.url = URL.createObjectURL(b); render();
+}
+// 1枚の写真（教科書のページなど）から答えの部分を切り出す
+async function phSame() {
+  const src = PH.q[0]; if (!src) return;
+  const b = await cropEditor(src.orig, '答えの部分を囲んで「決定」'); if (!b) return;
+  PH.a.push({ orig: src.orig, blob: b, url: URL.createObjectURL(b) }); render();
+}
+async function phSave() {
+  const deck = $('#phDeck').value; if (!deckById(deck) || !phReadyNow() || PH.busy) return;
+  PH.busy = true; phReady();
+  try {
+    const put = async list => { const ids = []; for (const p of list) { const id = 'i' + uid(); await idbPut('img', id, p.blob); ids.push(id); } return ids; };
+    const qi = await put(PH.q), ai = await put(PH.a);
+    D.cards.push(makeCard({ deck, type: 'flash', q: PH.qt.trim(), a: PH.at.trim(), qi, ai }));
+    D.lastPhotoDeck = deck; await flush();
+    [...PH.q, ...PH.a].forEach(p => URL.revokeObjectURL(p.url));
+    Object.assign(PH, { q: [], a: [], qt: '', at: '' });
+    toast('保存しました。次の問題をどうぞ');
+  } catch (e) { toast('保存に失敗：' + e.message, 5000); }
+  PH.busy = false; render(); scrollTo(0, 0);
+}
+
+/* まとめて追加：選んだ順に「問題 → 答え」の2枚ずつで組にする */
+const pairUp = items => { const out = []; for (let i = 0; i < items.length; i += 2) out.push({ q: items[i], a: items[i + 1] || null }); return out; };
+async function phBatchFiles(files) {
+  if (!files.length) return;
+  toast(`${files.length} 枚を読み込み中…`, 3000);
+  const items = [];
+  for (const f of files) { try { items.push(await phItem(f)); } catch (e) { toast(e.message); } }
+  PH.batch = pairUp(items);
+  if (route === 'photo') render(); else go('photo');
+}
+// 1枚だけ除くと、それ以降の組み合わせが1枚ずつずれる（撮り間違いの修正用）
+function pairDelImg(i, k) {
+  const target = PH.batch[i] && PH.batch[i][k]; if (!target) return;
+  URL.revokeObjectURL(target.url);
+  PH.batch = pairUp(PH.batch.flatMap(p => [p.q, p.a]).filter(x => x && x !== target)); render();
+}
+function vPhotoBatch(deck) {
+  const ok = PH.batch.filter(p => p.q && p.a).length;
+  const fig = (p, i, k, label) => `<figure>${p[k] ? `<img src="${p[k].url}" alt="" data-act="zoom"><button class="x" data-act="pairDelImg" data-i="${i}" data-k="${k}" title="この写真を除く">✕</button>` : `<div class="noimg">${label}なし</div>`}<figcaption>${label}</figcaption></figure>`;
+  return `<div class="ph"><h1>まとめて追加</h1>
+    <p class="sub" style="margin-top:-8px">選んだ順に「問題 → 答え」の2枚ずつで組にしました。写真の ✕ でその1枚を除くと、以降の組み合わせが1枚ずつずれます。</p>
+    <label>追加先のデッキ${deckSelHTML(deck)}</label>
+    <div class="pairs">${PH.batch.map((p, i) => `<div class="panel pair"><span class="pair-n">${i + 1}</span>${fig(p, i, 'q', '問題')}${fig(p, i, 'a', '答え')}
+      <div class="pair-t"><button class="btn sm" data-act="pairSwap" data-i="${i}">⇄ 入れ替え</button><button class="btn sm danger" data-act="pairDel" data-i="${i}">この組を削除</button></div></div>`).join('')}</div>
+    <div class="ph-save"><button class="btn primary big" data-act="batchSave" ${ok && !PH.busy ? '' : 'disabled'}>${ok} 枚のカードを保存</button></div>
+    <p style="text-align:center"><button class="link" data-act="batchCancel">やめる</button></p></div>`;
+}
+async function batchSave() {
+  const deck = $('#phDeck').value; if (!deckById(deck) || PH.busy) return;
+  PH.busy = true; render();
+  let n = 0;
+  try {
+    for (const p of PH.batch) {
+      if (!p.q || !p.a) continue;
+      const qi = 'i' + uid(), ai = 'i' + uid();
+      await idbPut('img', qi, p.q.blob); await idbPut('img', ai, p.a.blob);
+      D.cards.push(makeCard({ deck, type: 'flash', qi: [qi], ai: [ai], _i: n++ }));
+    }
+    PH.batch.forEach(p => [p.q, p.a].forEach(x => x && URL.revokeObjectURL(x.url)));
+    PH.batch = null; D.lastPhotoDeck = deck; await flush();
+    toast(`${n} 枚のカードを保存しました`);
+  } catch (e) { toast('保存に失敗：' + e.message, 5000); }
+  PH.busy = false; render(); scrollTo(0, 0);
+}
+
+/* 切り抜き・回転エディタ。元画像を受け取り、切り抜いた画像（Blob）を返す。やめたら null */
+function loadImage(blob) {
+  return new Promise((res, rej) => {
+    const u = URL.createObjectURL(blob), im = new Image();
+    im.onload = () => { URL.revokeObjectURL(u); res(im); };
+    im.onerror = () => { URL.revokeObjectURL(u); rej(new Error('画像を読み込めません')); };
+    im.src = u;
+  });
+}
+async function cropEditor(blob, hint = '角をドラッグで範囲を調整、中をドラッグで移動。枠の外をなぞると囲み直せます') {
+  let img; try { img = await loadImage(blob); } catch (e) { toast(e.message); return null; }
+  return new Promise(resolve => {
+    document.body.insertAdjacentHTML('beforeend', `<div class="cropov" id="crop"><div class="crop-hint">${esc(hint)}</div><div class="crop-stage"><canvas></canvas></div>
+      <div class="crop-bar"><button class="btn" data-c="cancel">やめる</button><button class="btn" data-c="rot">↻ 回転</button><button class="btn" data-c="all">全体</button><button class="btn primary" data-c="ok">決定</button></div></div>`);
+    const ov = $('#crop'), stage = $('.crop-stage', ov), cv = $('canvas', ov), ctx = cv.getContext('2d');
+    let rot = 0, src, r, sc, ox, oy, drag = null;
+    const build = () => {   // 回転を反映した作業用画像（長辺2400pxまで）
+      const k = Math.min(1, 2400 / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.round(img.naturalWidth * k), h = Math.round(img.naturalHeight * k);
+      src = document.createElement('canvas'); src.width = rot % 2 ? h : w; src.height = rot % 2 ? w : h;
+      const x = src.getContext('2d'); x.translate(src.width / 2, src.height / 2); x.rotate(rot * Math.PI / 2); x.drawImage(img, -w / 2, -h / 2, w, h);
+      r = { x: 0, y: 0, w: src.width, h: src.height }; layout();
+    };
+    const layout = () => {
+      const W = stage.clientWidth, H = stage.clientHeight, dpr = devicePixelRatio || 1;
+      cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px';
+      sc = Math.min((W - 40) / src.width, (H - 40) / src.height); ox = (W - src.width * sc) / 2; oy = (H - src.height * sc) / 2; draw();
+    };
+    const corners = () => { const X = ox + r.x * sc, Y = oy + r.y * sc, R = X + r.w * sc, B = Y + r.h * sc; return [[X, Y], [R, Y], [X, B], [R, B]]; };
+    const draw = () => {
+      const dpr = devicePixelRatio || 1; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
+      const iw = src.width * sc, ih = src.height * sc; ctx.drawImage(src, ox, oy, iw, ih);
+      const X = ox + r.x * sc, Y = oy + r.y * sc, Wd = r.w * sc, Ht = r.h * sc;
+      ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.beginPath(); ctx.rect(ox, oy, iw, ih); ctx.rect(X, Y, Wd, Ht); ctx.fill('evenodd');
+      ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1; ctx.beginPath();
+      for (const f of [1 / 3, 2 / 3]) { ctx.moveTo(X + Wd * f, Y); ctx.lineTo(X + Wd * f, Y + Ht); ctx.moveTo(X, Y + Ht * f); ctx.lineTo(X + Wd, Y + Ht * f); }
+      ctx.stroke(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(X, Y, Wd, Ht);
+      ctx.fillStyle = '#fff'; for (const [hx, hy] of corners()) ctx.fillRect(hx - 8, hy - 8, 16, 16);
+    };
+    const pt = e => {
+      const b = cv.getBoundingClientRect(), sx = e.clientX - b.left, sy = e.clientY - b.top;
+      return { sx, sy, x: Math.min(src.width, Math.max(0, (sx - ox) / sc)), y: Math.min(src.height, Math.max(0, (sy - oy) / sc)) };
+    };
+    const span = (a, b) => { const m = Math.min(24 / sc, src.width, src.height); return [Math.min(a, b), Math.max(m, Math.abs(b - a))]; };
+    const fromCorners = (ax, ay, bx, by) => {
+      const [x, w] = span(ax, bx), [y, h] = span(ay, by);
+      r = { x: Math.min(x, src.width - w), y: Math.min(y, src.height - h), w, h };
+    };
+    cv.addEventListener('pointerdown', e => {
+      e.preventDefault(); cv.setPointerCapture(e.pointerId); const p = pt(e);
+      const ci = corners().findIndex(([hx, hy]) => Math.hypot(hx - p.sx, hy - p.sy) < 32);
+      if (ci >= 0) drag = { m: 'resize', ax: r.x + (ci % 2 ? 0 : r.w), ay: r.y + (ci < 2 ? r.h : 0) };   // 反対側の角を固定
+      else if (p.x > r.x && p.x < r.x + r.w && p.y > r.y && p.y < r.y + r.h) drag = { m: 'move', px: p.x, py: p.y, r0: { ...r } };
+      else drag = { m: 'resize', ax: p.x, ay: p.y };
+    });
+    cv.addEventListener('pointermove', e => {
+      if (!drag) return; const p = pt(e);
+      if (drag.m === 'move') {
+        r.x = Math.min(src.width - r.w, Math.max(0, drag.r0.x + p.x - drag.px));
+        r.y = Math.min(src.height - r.h, Math.max(0, drag.r0.y + p.y - drag.py));
+      } else fromCorners(drag.ax, drag.ay, p.x, p.y);
+      draw();
+    });
+    const end = () => { drag = null; };
+    cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+    const onResize = () => layout(); addEventListener('resize', onResize);
+    const close = v => { removeEventListener('resize', onResize); ov.remove(); resolve(v); };
+    ov.addEventListener('click', async e => {
+      const c = e.target.closest('[data-c]'); if (!c) return;
+      if (c.dataset.c === 'cancel') close(null);
+      if (c.dataset.c === 'rot') { rot = (rot + 1) % 4; build(); }
+      if (c.dataset.c === 'all') { r = { x: 0, y: 0, w: src.width, h: src.height }; draw(); }
+      if (c.dataset.c === 'ok') {
+        const out = document.createElement('canvas'), k = Math.min(1, 1600 / Math.max(r.w, r.h));
+        out.width = Math.max(1, Math.round(r.w * k)); out.height = Math.max(1, Math.round(r.h * k));
+        out.getContext('2d').drawImage(src, r.x, r.y, r.w, r.h, 0, 0, out.width, out.height);
+        try { close(await canvasToBlob(out)); } catch (err) { toast(err.message); close(null); }
+      }
+    });
+    build();
+  });
+}
+
+/* ---------- 追加 ---------- */
+function vAdd() {
+  if (!D.decks.length) { ensureDeck('未分類'); save(); }
+  const last = D.lastAdd || {};
+  const deck = RP.deck || last.deck || D.decks[0].id;
+  return `<div style="max-width:720px;margin:0 auto"><h1>カードを追加</h1>
+    <form id="fAdd" class="panel pad">${cardFormHTML({ deck, type: last.type || 'flash', tags: last.tags || [] }, { reverse: true, revOn: last.rev })}
+      <div class="row"><span class="sub"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> で追加</span><div class="spacer"></div><button class="btn primary">追加</button></div>
+    </form>
+    <p class="sub" style="text-align:center">まとめて登録するなら <button class="link" data-go="import">取り込み</button> が便利です</p></div>`;
+}
+after.add = () => { wireForm(); $('#cf [name=q]').focus(); };
+function submitAdd() {
+  const o = readForm(), err = validCard(o); if (err) return toast(err);
+  D.cards.push(makeCard(o)); if (o.rev) D.cards.push(makeCard(reverseOf(o)));
+  D.lastAdd = { deck: o.deck, type: o.type, tags: o.tags, rev: o.rev }; save();
+  toast(o.rev ? '2枚追加しました（逆向き含む）' : '追加しました');
+  RP = { deck: o.deck }; render();
+}
+
+/* ---------- 編集ダイアログ ---------- */
+let ovDone = null;
+function openEditor(id, done) {
+  const c = byId(id); if (!c) return;
+  ovDone = done || null;
+  document.body.insertAdjacentHTML('beforeend', `<div class="ov" id="ov"><form class="panel dlg" id="fEdit" data-id="${c.id}">
+    <div class="row" style="margin-bottom:12px"><h2>カードを編集</h2><div class="spacer"></div><button type="button" class="btn sm" data-act="ovClose">閉じる</button></div>
+    ${cardFormHTML(c)}
+    <p class="sub">正解 ${c.st.ok} 回 ・ 不正解 ${c.st.ng} 回 ・ 忘れた回数 ${c.s.lapses} ・ ${c.s.st === 'review' ? `次回 ${fmtDate(c.s.due)}（間隔 ${c.s.ivl} 日）` : c.s.st === 'new' ? '未学習' : '学習中'}${cardR(c) != null ? `<br>今の記憶率 ${Math.round(cardR(c) * 100)}% ・ 安定度 ${fmtDays(c.s.S)} ・ 難易度 ${c.s.d.toFixed(1)} / 10` : ''}</p>
+    <div class="row">
+      <button type="button" class="btn sm danger" data-act="ovDel">削除</button>
+      <button type="button" class="btn sm" data-act="ovReset">学習状況をリセット</button>
+      <label class="chk" style="margin:0"><input type="checkbox" name="susp" ${c.susp ? 'checked' : ''}> 出題しない</label>
+      <div class="spacer"></div><button class="btn primary">保存</button>
+    </div></form></div>`);
+  wireForm(); hydrate($('#ov'));
+  $('#ov').addEventListener('mousedown', e => { if (e.target.id === 'ov') closeOverlay(); });
+}
+function closeOverlay() { const o = $('#ov'); if (o) o.remove(); }
+function submitEdit(form) {
+  const c = byId(form.dataset.id), o = readForm(), err = validCard(o); if (err) return toast(err);
+  const removed = [...c.qi, ...c.ai].filter(r => ![...o.qi, ...o.ai].includes(r) && !isUrl(r));
+  removed.forEach(r => idbDel('img', r));
+  Object.assign(c, { deck: o.deck, type: o.type, q: o.q, a: o.a, ex: o.ex, ch: o.ch, tags: o.tags, qi: o.qi, ai: o.ai, susp: $('[name=susp]', form).checked });
+  save(); closeOverlay(); toast('保存しました'); ovDone ? ovDone() : render();
+}
+const fmtDate = t => { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()}（${WD[d.getDay()]}）`; };
+
+/* ---------- カード一覧 ---------- */
+const BR = { q: '', deck: '', type: '', state: '', limit: 200, sel: new Set() };
+function brFilter() {
+  const q = norm(BR.q), now = Date.now();
+  return D.cards.filter(c => (!BR.deck || c.deck === BR.deck) && (!BR.type || c.type === BR.type) &&
+    (!q || norm(c.q + ' ' + c.a + ' ' + c.ex + ' ' + (c.tags || []).join(' ')).includes(q)) &&
+    ({ '': true, new: c.s.st === 'new', learn: c.s.st === 'learn' || c.s.st === 'relearn', review: c.s.st === 'review', due: c.s.st !== 'new' && c.s.due <= now, weak: isWeak(c), flag: c.flag, susp: c.susp, img: (c.qi || []).length + (c.ai || []).length > 0 })[BR.state]);
+}
+function vBrowse() {
+  return `<h1>カード一覧</h1>
+  <div class="filters">
+    <input id="brQ" placeholder="検索（問題・答え・解説・タグ）" value="${esc(BR.q)}">
+    <select id="brDeck"><option value="">すべてのデッキ</option>${D.decks.map(d => `<option value="${d.id}" ${BR.deck === d.id ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select>
+    <select id="brType"><option value="">すべての形式</option>${Object.entries(TYPE_LABEL).map(([v, l]) => `<option value="${v}" ${BR.type === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+    <select id="brState">${[['', 'すべての状態'], ['new', '未学習'], ['learn', '学習中'], ['review', '復習'], ['due', '期限切れ'], ['weak', '苦手'], ['flag', 'フラグ付き'], ['susp', '出題しない'], ['img', '画像あり']].map(([v, l]) => `<option value="${v}" ${BR.state === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+  </div>
+  <div id="brBody"></div>`;
+}
+after.browse = () => {
+  let t; $('#brQ').addEventListener('input', e => { clearTimeout(t); t = setTimeout(() => { BR.q = e.target.value; BR.limit = 200; brList(); }, 150); });
+  [['#brDeck', 'deck'], ['#brType', 'type'], ['#brState', 'state']].forEach(([s, k]) => $(s).addEventListener('change', e => { BR[k] = e.target.value; BR.limit = 200; brList(); }));
+  brList();
+};
+function brList() {
+  const list = brFilter(), shown = list.slice(0, BR.limit); const ids = new Set(list.map(c => c.id));
+  [...BR.sel].forEach(id => { if (!ids.has(id)) BR.sel.delete(id); });
+  const n = BR.sel.size;
+  $('#brBody').innerHTML = `
+  <div class="panel bulk">
+    <label class="chk" style="margin:0"><input type="checkbox" id="brAll" ${n && n === list.length ? 'checked' : ''}> ${n ? `${n} 枚選択中` : `${list.length} 枚`}</label>
+    <div class="spacer"></div>
+    ${n ? `<button class="btn sm" data-act="brPractice">選択を練習</button>
+      <select id="brMove" style="width:auto;padding:5px 8px;font-size:13px"><option value="">デッキ移動…</option>${D.decks.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join('')}</select>
+      <button class="btn sm" data-act="brFlag">フラグ切替</button><button class="btn sm" data-act="brSusp">出題しない切替</button>
+      <button class="btn sm" data-act="brReset">学習リセット</button><button class="btn sm danger" data-act="brDel">削除</button>` : `<span class="sub">行をクリックで編集</span>`}
+  </div>
+  ${list.length ? `<div class="panel tbl-wrap"><table><thead><tr><th style="width:28px"></th><th>問題</th><th>答え</th><th class="hide-m">デッキ</th><th class="hide-m">形式</th><th>状態</th><th title="今この瞬間に思い出せる確率（FSRSの推定）">記憶率</th><th class="hide-m">正答率</th></tr></thead><tbody>
+  ${shown.map(c => {
+    const tot = c.st.ok + c.st.ng; const state = c.susp ? '<span class="badge">出題しない</span>' : c.s.st === 'new' ? '<span class="n-new">未学習</span>' : c.s.st === 'review' ? `<span class="n-rev">${fmtDate(c.s.due)}</span>` : '<span class="n-learn">学習中</span>';
+    return `<tr class="click" data-act="editRow" data-id="${c.id}"><td><input type="checkbox" class="brChk" data-id="${c.id}" ${BR.sel.has(c.id) ? 'checked' : ''}></td>
+      <td class="clip">${c.flag ? '<span class="flag-on">★</span> ' : ''}${thumb(c.qi)}${esc(c.q)}${isWeak(c) ? ' <span class="badge" style="color:var(--ng)">苦手</span>' : ''}</td>
+      <td class="clip">${thumb(c.ai)}${esc(c.a)}</td><td class="clip hide-m" style="max-width:140px">${esc(deckName(c.deck))}</td>
+      <td class="hide-m"><span class="badge">${TYPE_LABEL[c.type]}</span></td><td class="num">${state}</td><td class="num">${cardR(c) != null ? Math.round(cardR(c) * 100) + '%' : '—'}</td><td class="num hide-m">${tot ? Math.round(c.st.ok / tot * 100) + '%' : '—'}</td></tr>`;
+  }).join('')}</tbody></table></div>
+  ${list.length > shown.length ? `<div style="text-align:center;margin-top:12px"><button class="btn" data-act="brMore">さらに表示（残り ${list.length - shown.length} 枚）</button></div>` : ''}`
+      : '<div class="panel empty">該当するカードがありません</div>'}`;
+  hydrate($('#brBody'));
+  $('#brAll').addEventListener('change', e => { if (e.target.checked) list.forEach(c => BR.sel.add(c.id)); else BR.sel.clear(); brList(); });
+  const mv = $('#brMove'); if (mv) mv.addEventListener('change', e => { if (!e.target.value) return; BR.sel.forEach(id => { const c = byId(id); if (c) c.deck = e.target.value; }); save(); toast('移動しました'); brList(); });
+}
+
+/* ---------- 取り込み ---------- */
+const IMP = { text: '', fmt: 'auto', deck: '', newDeck: '', type: 'flash', rev: false, skipDup: true, strip: true, rows: null, detected: '', aiFmt: 'md', aiChoice: false, aiList: '' };
+const HEAD = {
+  q: /^(問題|問題文|質問|問い|表|単語|用語|英単語|question|front|q|term|word)$/i,
+  a: /^(答え|答|解答|正解|回答|裏|意味|訳|和訳|answer|back|a|meaning|definition)$/i,
+  ch: /^(選択肢|誤答|誤答選択肢|ダミー|choices|options|distractors|wrong)$/i,
+  ex: /^(解説|説明|補足|メモ|例文|explanation|note|notes|example)$/i,
+  tags: /^(タグ|分野|カテゴリ|tags?|category)$/i,
+  type: /^(形式|種類|タイプ|type)$/i,
+  deck: /^(デッキ|deck)$/i
+};
+function mapHeader(cells) {
+  const m = {}; cells.forEach((c, i) => { const k = Object.keys(HEAD).find(k => HEAD[k].test(c.trim().replace(/\*\*/g, ''))); if (k && m[k] == null) m[k] = i; });
+  return m.q != null || m.a != null ? m : null;
+}
+const POS = { q: 0, a: 1, ex: 2, tags: 3 };
+function parseType(v, hasCh, def) {
+  v = String(v || '').trim().toLowerCase();
+  if (/^(choice|mc|選択|4択|四択)/.test(v)) return 'choice';
+  if (/^(input|text|記述|入力|一問一答)/.test(v)) return 'input';
+  if (/^(flash|card|カード|暗記)/.test(v)) return 'flash';
+  return hasCh ? 'choice' : def;
+}
+function cleanText(s) {
+  s = String(s ?? '');
+  if (IMP.strip && /<[a-z/!]|&[a-z#0-9]+;/i.test(s)) {
+    s = s.replace(/<br\s*\/?>/gi, '\n').replace(/<\/(div|p|li)>/gi, '\n');
+    s = new DOMParser().parseFromString(s, 'text/html').body.textContent || '';
+  }
+  return s.replace(/\[sound:[^\]]*\]/g, '').replace(/\n{3,}/g, '\n\n').trim();
+}
+function pullImages(s) {
+  const imgs = []; s = String(s || '').replace(/!\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+"[^"]*")?\s*\)/g, (_, u) => { imgs.push(u); return ''; });
+  s = s.replace(/<img[^>]+src=["']([^"']+)["'][^>]*>/gi, (_, u) => { imgs.push(u); return ''; });
+  return [s.trim(), imgs];
+}
+function rowObj(get) {
+  const [q, qi] = pullImages(get('q')), [a, ai] = pullImages(get('a'));
+  let ch = get('ch'); ch = Array.isArray(ch) ? ch : String(ch || '').split(/\s*[|｜\n]\s*/);
+  ch = ch.map(x => cleanText(x)).filter(Boolean);
+  let tags = get('tags'); tags = Array.isArray(tags) ? tags : String(tags || '').split(/[\s,、#]+/);
+  tags = tags.map(x => String(x).trim()).filter(Boolean);
+  return { q: cleanText(q), a: cleanText(a), qi, ai, ch, ex: cleanText(get('ex')), tags, type: parseType(get('type'), ch.length, IMP.type), deck: String(get('deck') || '').trim() };
+}
+function parseDelimited(text, delim) {
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) { if (ch === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += ch; }
+    else if (ch === '"' && f === '') q = true;
+    else if (ch === delim) { row.push(f); f = ''; }
+    else if (ch === '\n') { row.push(f); rows.push(row); row = []; f = ''; }
+    else if (ch !== '\r') f += ch;
+  }
+  if (f !== '' || row.length) { row.push(f); rows.push(row); }
+  const data = rows.filter(r => r.some(x => x.trim() !== ''));
+  if (!data.length) return [];
+  let map = mapHeader(data[0]); if (map) data.shift(); else map = delim === '\t' ? { q: 0, a: 1, tags: 2 } : POS;   // Anki の書き出しは3列目がタグ
+  return data.map(r => rowObj(k => map[k] != null ? r[map[k]] : ''));
+}
+function splitMdRow(line) {
+  let s = line.trim(); if (s.startsWith('|')) s = s.slice(1); if (s.endsWith('|') && !s.endsWith('\\|')) s = s.slice(0, -1);
+  return s.split(/(?<!\\)\|/).map(c => c.replace(/\\\|/g, '|').replace(/<br\s*\/?>/gi, '\n').trim());
+}
+const PAIR_SEPS = ['\t', '：', ' : ', ' — ', ' – ', ' → ', '→', ' ⇒ ', ' = ', ' - ', ': ', ':'];
+function parseMarkdown(text) {
+  const out = []; let tag = null, hdr = null, qa = null;
+  const withTag = o => { if (tag && !o.tags.includes(tag)) o.tags.push(tag); return o; };
+  const flushQA = () => { if (qa) out.push(withTag(rowObj(k => qa[k]))); qa = null; };
+  for (const raw of text.split('\n')) {
+    const t = raw.trim();
+    if (!t) { hdr = null; continue; }
+    const h = t.match(/^#{1,6}\s+(.+)$/);
+    if (h) { flushQA(); hdr = null; tag = h[1].replace(/[*`]/g, '').trim(); continue; }
+    if (t.startsWith('|')) {
+      flushQA(); const cells = splitMdRow(t);
+      if (cells.every(c => /^:?-{2,}:?$/.test(c) || c === '')) continue;
+      if (!hdr) { const m = mapHeader(cells); if (m) { hdr = m; continue; } hdr = POS; }
+      const H = hdr; out.push(withTag(rowObj(k => H[k] != null ? cells[H[k]] : ''))); continue;
+    }
+    hdr = null;
+    const mq = t.match(/^(?:[-*]\s*)?(?:Q\d*|問題?\d*|質問)\s*[.:：）)]\s*(.*)$/i);
+    if (mq) { flushQA(); qa = { q: mq[1], a: '', ex: '', ch: '', tags: '', type: '', _l: 'q' }; continue; }
+    if (qa) {
+      const m = t.match(/^(?:[-*]\s*)?(A|答え?|解答|正解|E|解説|C|選択肢|T|タグ|形式)\s*[.:：]\s*(.*)$/i);
+      if (m) { const k = /^(a|答|解答|正解)/i.test(m[1]) ? 'a' : /^(e|解説)/i.test(m[1]) ? 'ex' : /^(c|選択肢)/i.test(m[1]) ? 'ch' : /^(t|タグ)/i.test(m[1]) ? 'tags' : 'type'; qa[k] = m[2]; qa._l = k; }
+      else qa[qa._l] += (qa[qa._l] ? '\n' : '') + t;
+      continue;
+    }
+    const line = t.replace(/^(?:[-*+]\s+|\d+[.)]\s+)/, '');
+    for (const sep of PAIR_SEPS) {
+      const i = line.indexOf(sep);
+      if (i > 0) { const q = line.slice(0, i), a = line.slice(i + sep.length); out.push(withTag(rowObj(k => ({ q, a })[k] || ''))); break; }
+    }
+  }
+  flushQA();
+  return out;
+}
+function parseJSON(text) {
+  const s = text.slice(Math.min(...['[', '{'].map(c => { const i = text.indexOf(c); return i < 0 ? 1e9 : i; })));
+  let j = JSON.parse(s.slice(0, Math.max(s.lastIndexOf(']'), s.lastIndexOf('}')) + 1));
+  if (!Array.isArray(j)) j = j.cards || j.items || j.questions || [];
+  const key = (o, re) => { const k = Object.keys(o).find(k => re.test(k)); return k ? o[k] : ''; };
+  return j.map(o => rowObj(k => key(o, HEAD[k])));
+}
+function detect(text) {
+  const t = text.trim(); if (!t) return '';
+  if (/^[[{]/.test(t)) return 'json';
+  const lines = t.split('\n').filter(l => l.trim());
+  if (lines.filter(l => l.trim().startsWith('|')).length >= 2 || /^#{1,6}\s/m.test(t) || /^(?:Q\d*|問題?\d*)\s*[.:：]/im.test(t)) return 'md';
+  if (lines.filter(l => l.includes('\t')).length >= lines.length / 2) return 'tsv';
+  const strong = lines.filter(l => ['：', ' : ', ' — ', ' → ', '→', ' = ', ' - '].some(s => l.includes(s))).length;
+  if (strong >= lines.length / 2) return 'md';
+  if (lines.filter(l => l.includes(',')).length >= lines.length / 2) return 'csv';
+  return 'md';
+}
+const FMT_LABEL = { md: 'Markdown / 箇条書き', csv: 'CSV', tsv: 'TSV（Anki書き出し）', json: 'JSON' };
+function runParse() {
+  let text = IMP.text.replace(/^﻿/, '').replace(/\r\n?/g, '\n').replace(/^```.*$/gm, '');
+  text = text.split('\n').filter(l => !/^#(separator|html|tags|columns|notetype|deck)[^:]*:/i.test(l)).join('\n');   // Anki の書き出しヘッダ
+  const f = IMP.fmt === 'auto' ? detect(text) : IMP.fmt; IMP.detected = f;
+  try {
+    IMP.rows = !f ? [] : f === 'json' ? parseJSON(text) : f === 'csv' ? parseDelimited(text, ',') : f === 'tsv' ? parseDelimited(text, '\t') : parseMarkdown(text);
+    IMP.rows = IMP.rows.filter(r => (r.q || r.qi.length) && (r.a || r.ai.length));
+    IMP.err = '';
+  } catch (e) { IMP.rows = []; IMP.err = '読み込めませんでした：' + e.message; }
+}
+function aiPrompt() {
+  const md = IMP.aiFmt === 'md', ch = IMP.aiChoice;
+  const cols = ch ? ['問題', '答え', '選択肢', '解説', 'タグ'] : ['問題', '答え', '解説', 'タグ'];
+  return `次のリストを、暗記アプリに取り込める${md ? ' Markdown の表' : ' CSV'}に変換してください。
+
+# 出力ルール
+- ${md ? 'Markdown の表だけ' : 'CSV だけ（コードブロックに入れる）'}を出力し、前後の説明文は書かない
+- 1行目は見出し行：${cols.join(md ? ' | ' : ',')}
+- 1行につき1問
+- 「問題」は覚えたい語句や問い、「答え」はその意味や正解
+- 答えに別の言い方がある場合は全角の「｜」で区切る（例：札幌｜さっぽろ）${ch ? `
+- 「選択肢」には、もっともらしい誤答を3つ、全角の「｜」で区切って入れる` : ''}
+- 「解説」は短い補足や例文を1文で（不要なら空欄）
+- 「タグ」は分野などを空白区切りで（不要なら空欄）
+${md ? '- セル内で改行したいときは <br> を使う' : '- カンマや改行を含むセルはダブルクォートで囲む'}
+- 元のリストの内容は省略・改変しない。誤りがあれば解説欄に指摘する
+
+# リスト
+${IMP.aiList.trim() || '（ここに単語リストを貼り付け）'}`;
+}
+function vImport() {
+  if (!IMP.deck) IMP.deck = (D.decks[0] || {}).id || '__new';
+  const rows = IMP.rows;
+  const dupSet = new Set(D.cards.filter(c => c.deck === IMP.deck).map(c => norm(c.q)));
+  const dups = rows ? rows.filter(r => !r.deck && dupSet.has(norm(r.q))).length : 0;
+  return `<h1>取り込み</h1>
+  <div class="imp">
+    <div>
+      <div class="panel pad">
+        <div class="drop" id="drop">ファイルをドロップ、または<b>クリックして選択</b>（.csv .tsv .txt .md .json）<input type="file" id="impFile" accept=".csv,.tsv,.txt,.md,.markdown,.json,text/*" hidden></div>
+        <label>AIが出力したテキストを貼り付け<textarea class="src" id="impText" placeholder="| 問題 | 答え | 解説 |&#10;|---|---|---|&#10;| ephemeral | はかない | 名詞は ephemera |&#10;&#10;または&#10;&#10;apple：りんご&#10;banana：バナナ">${esc(IMP.text)}</textarea></label>
+        <div class="grid2">
+          <label>取り込み先デッキ<select id="impDeck">${D.decks.map(d => `<option value="${d.id}" ${IMP.deck === d.id ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}<option value="__new" ${IMP.deck === '__new' ? 'selected' : ''}>＋ 新しいデッキ</option></select></label>
+          <label ${IMP.deck === '__new' ? '' : 'hidden'} id="impNewWrap">新しいデッキ名<input id="impNew" value="${esc(IMP.newDeck)}" placeholder="例：TOEIC 単語"></label>
+          <label>形式の指定がない行は<select id="impType">${Object.entries(TYPE_LABEL).map(([v, l]) => `<option value="${v}" ${IMP.type === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+          <label>読み取り方<select id="impFmt"><option value="auto">自動判定</option>${Object.entries(FMT_LABEL).map(([v, l]) => `<option value="${v}" ${IMP.fmt === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+        </div>
+        <label class="chk"><input type="checkbox" id="impRev" ${IMP.rev ? 'checked' : ''}> 逆向きのカードも作る（答え → 問題。単語帳の両方向練習に）</label>
+        <label class="chk"><input type="checkbox" id="impDup" ${IMP.skipDup ? 'checked' : ''}> 同じデッキに同じ問題があれば飛ばす</label>
+        <label class="chk"><input type="checkbox" id="impStrip" ${IMP.strip ? 'checked' : ''}> HTMLタグを取り除く（Anki から書き出したデータ向け）</label>
+      </div>
+      ${rows ? `<div class="panel pad" style="margin-top:16px">
+        <div class="row" style="margin-bottom:10px"><h2>プレビュー</h2><span class="badge">${FMT_LABEL[IMP.detected] || '—'} として読み取り</span><div class="spacer"></div>
+          <button class="btn primary" data-act="impCommit" ${rows.length ? '' : 'disabled'}>${rows.length - (IMP.skipDup ? dups : 0)} 枚を取り込む${IMP.rev ? '（＋逆向き）' : ''}</button></div>
+        ${IMP.err ? `<p style="color:var(--ng)">${esc(IMP.err)}</p>` : ''}
+        ${rows.length ? `<p class="sub">${rows.length} 枚を読み取りました${dups ? `（うち重複 ${dups} 枚）` : ''}。</p>
+        <div class="tbl-wrap" style="max-height:420px;overflow:auto;border:1px solid var(--line)"><table><thead><tr><th>形式</th><th>問題</th><th>答え</th><th>解説</th><th>タグ</th></tr></thead><tbody>
+        ${rows.slice(0, 200).map(r => `<tr class="${!r.deck && dupSet.has(norm(r.q)) && IMP.skipDup ? 'dup' : ''}"><td><span class="badge">${TYPE_LABEL[r.type]}</span></td><td>${r.qi.length ? '🖼 ' : ''}${rich(r.q)}</td><td>${r.ai.length ? '🖼 ' : ''}${rich(r.a)}${r.ch.length ? `<div class="muted" style="font-size:12px">誤答：${esc(r.ch.join(' / '))}</div>` : ''}</td><td class="muted">${rich(r.ex)}</td><td>${r.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</td></tr>`).join('')}
+        </tbody></table></div>${rows.length > 200 ? `<p class="sub">先頭200件を表示しています</p>` : ''}` : (IMP.err ? '' : '<p class="sub">カードとして読み取れる行がありませんでした。右の「使える形式」を確認してください。</p>')}
+      </div>` : ''}
+    </div>
+    <div>
+      <div class="panel pad">
+        <h2>AIへの依頼文</h2>
+        <p class="sub">これをコピーして、いつも使っているAIに単語リストと一緒に送ってください。返ってきた表を左に貼り付ければ取り込めます。</p>
+        <div class="row" style="margin-bottom:10px">
+          <select id="aiFmt" style="width:auto"><option value="md" ${IMP.aiFmt === 'md' ? 'selected' : ''}>Markdown の表で</option><option value="csv" ${IMP.aiFmt === 'csv' ? 'selected' : ''}>CSV で</option></select>
+          <label class="chk" style="margin:0"><input type="checkbox" id="aiChoice" ${IMP.aiChoice ? 'checked' : ''}> 選択式の誤答も作らせる</label>
+        </div>
+        <label>単語リスト（任意・ここに入れると依頼文に含めます）<textarea id="aiList" rows="4" placeholder="apple&#10;ephemeral&#10;…">${esc(IMP.aiList)}</textarea></label>
+        <pre class="prompt" id="aiPrompt">${esc(aiPrompt())}</pre>
+        <button class="btn primary" data-act="copyPrompt">依頼文をコピー</button>
+      </div>
+      <details class="panel pad fmt-help" style="margin-top:16px">
+        <summary><b>使える形式</b></summary>
+        <p><b>Markdown の表</b>（見出しの名前で列を判断。<code>問題 答え 選択肢 解説 タグ 形式</code>）</p>
+        <pre>| 問題 | 答え | 解説 |
+|---|---|---|
+| ephemeral | はかない | |</pre>
+        <p><b>1行1問</b>（区切り：<code>：</code> <code> - </code> <code>→</code> <code>=</code> タブ）。<code>## 見出し</code> はタグになります</p>
+        <pre>## 果物
+- apple：りんご
+- banana - バナナ</pre>
+        <p><b>Q/A 形式</b></p>
+        <pre>Q: 日本で一番高い山は？
+A: 富士山
+解説: 標高3776m</pre>
+        <p><b>CSV / TSV</b>：1行目が見出しならその名前で、なければ「問題, 答え, 解説, タグ」の順。Anki の「テキストとして書き出し」もそのまま読めます。Excel の Shift_JIS CSV も可。</p>
+        <p><b>画像</b>：セル内の <code>![](https://…)</code> は画像として取り込みます。手元の画像は取り込み後に編集画面で貼り付けてください。</p>
+      </details>
+    </div>
+  </div>`;
+}
+after.import = () => {
+  const reparse = () => { if (IMP.text.trim()) runParse(); else IMP.rows = null; render(); };
+  let t;
+  $('#impText').addEventListener('input', e => { IMP.text = e.target.value; clearTimeout(t); t = setTimeout(() => { const pos = e.target.selectionStart; reparse(); const ta = $('#impText'); ta.focus(); ta.setSelectionRange(pos, pos); }, 500); });
+  $('#impDeck').addEventListener('change', e => { IMP.deck = e.target.value; render(); });
+  $('#impNew').addEventListener('input', e => IMP.newDeck = e.target.value);
+  $('#impType').addEventListener('change', e => { IMP.type = e.target.value; reparse(); });
+  $('#impFmt').addEventListener('change', e => { IMP.fmt = e.target.value; reparse(); });
+  $('#impRev').addEventListener('change', e => { IMP.rev = e.target.checked; render(); });
+  $('#impDup').addEventListener('change', e => { IMP.skipDup = e.target.checked; render(); });
+  $('#impStrip').addEventListener('change', e => { IMP.strip = e.target.checked; reparse(); });
+  $('#aiFmt').addEventListener('change', e => { IMP.aiFmt = e.target.value; $('#aiPrompt').textContent = aiPrompt(); });
+  $('#aiChoice').addEventListener('change', e => { IMP.aiChoice = e.target.checked; $('#aiPrompt').textContent = aiPrompt(); });
+  $('#aiList').addEventListener('input', e => { IMP.aiList = e.target.value; $('#aiPrompt').textContent = aiPrompt(); });
+  const drop = $('#drop'), fi = $('#impFile');
+  drop.addEventListener('click', e => { if (e.target !== fi) fi.click(); });
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+  drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('drag'); if (e.dataTransfer.files[0]) readImportFile(e.dataTransfer.files[0]); });
+  fi.addEventListener('change', () => { if (fi.files[0]) readImportFile(fi.files[0]); });
+};
+async function readImportFile(file) {
+  const buf = await file.arrayBuffer(); let text;
+  try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch { text = new TextDecoder('shift_jis').decode(buf); }
+  IMP.text = text;
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  IMP.fmt = { csv: 'csv', tsv: 'tsv', json: 'json', md: 'md', markdown: 'md' }[ext] || 'auto';
+  if (IMP.deck === '__new' && !IMP.newDeck) IMP.newDeck = file.name.replace(/\.[^.]+$/, '');
+  runParse(); render(); toast(`${file.name} を読み込みました`);
+}
+function commitImport() {
+  if (!IMP.rows || !IMP.rows.length) return;
+  let base = IMP.deck;
+  if (base === '__new') { if (!IMP.newDeck.trim()) return toast('新しいデッキ名を入力してください'); base = ensureDeck(IMP.newDeck); }
+  const seen = new Map(); let n = 0, skip = 0;
+  IMP.rows.forEach((r, i) => {
+    const deck = r.deck ? ensureDeck(r.deck) : base;
+    if (!seen.has(deck)) seen.set(deck, new Set(D.cards.filter(c => c.deck === deck).map(c => norm(c.q))));
+    const set = seen.get(deck);
+    if (IMP.skipDup && set.has(norm(r.q))) { skip++; return; }
+    set.add(norm(r.q));
+    const o = { ...r, deck, _i: i }; D.cards.push(makeCard(o)); n++;
+    if (IMP.rev) { D.cards.push(makeCard({ ...reverseOf(o), _i: i })); n++; }
+  });
+  save(); toast(`${n} 枚取り込みました${skip ? `（重複 ${skip} 枚を除外）` : ''}`, 3500);
+  Object.assign(IMP, { text: '', rows: null, newDeck: '', deck: base }); go('home');
+}
+
+/* ---------- 統計 ---------- */
+function niceMax(v) { if (v <= 4) return 4; const p = 10 ** Math.floor(Math.log10(v)); for (const m of [1, 2, 2.5, 5, 10]) if (m * p >= v) return m * p; return v; }
+function heatmapSVG() {
+  const weeks = 26, cs = 13, g = 3, L = 22, T = 16;
+  const base = shifted(); base.setHours(12, 0, 0, 0);
+  const start = new Date(base); start.setDate(start.getDate() - (weeks - 1) * 7 - base.getDay());
+  const cells = []; let max = 0;
+  for (let i = 0; i < weeks * 7; i++) {
+    const d = new Date(start); d.setDate(start.getDate() + i); if (d > base) break;
+    const k = ymd(d), v = dayCnt(k); max = Math.max(max, v); cells.push({ d, k, v, col: Math.floor(i / 7), row: i % 7 });
+  }
+  const lvl = v => !v ? 0 : v <= max * .25 ? 1 : v <= max * .5 ? 2 : v <= max * .75 ? 3 : 4;
+  let months = '', lastM = -1;
+  cells.filter(c => c.row === 0).forEach(c => { if (c.d.getMonth() !== lastM) { lastM = c.d.getMonth(); if (c.col < weeks - 1) months += `<text x="${L + c.col * (cs + g)}" y="10">${lastM + 1}月</text>`; } });
+  const W = L + weeks * (cs + g), H = T + 7 * (cs + g);
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="過去${weeks}週間の日別学習枚数">
+    ${months}${[1, 3, 5].map(r => `<text x="0" y="${T + r * (cs + g) + 10}">${WD[r]}</text>`).join('')}
+    ${cells.map(c => `<rect x="${L + c.col * (cs + g)}" y="${T + c.row * (cs + g)}" width="${cs}" height="${cs}" rx="2.5" fill="var(--h${lvl(c.v)})" data-tip="${c.d.getMonth() + 1}/${c.d.getDate()}（${WD[c.d.getDay()]}）　${c.v} 枚"/>`).join('')}
+  </svg>`;
+}
+function forecast() {
+  const days = 30, start = dayEnd() - DAY, cnt = Array(days).fill(0);
+  D.cards.forEach(c => { if (c.susp || c.s.st === 'new') return; const i = Math.max(0, Math.floor((c.s.due - start) / DAY)); if (i < days) cnt[i]++; });
+  return cnt;
+}
+function forecastSVG(cnt) {
+  const W = 640, H = 170, L = 30, B = 22, T = 8, n = cnt.length, max = niceMax(Math.max(...cnt, 1));
+  const bw = (W - L) / n, ph = H - B - T, y = v => T + ph - v / max * ph;
+  const bar = (x, yy, w, h) => { const r = Math.min(4, w / 2, h); return h <= 0 ? '' : `M${x},${yy + h}V${yy + r}Q${x},${yy} ${x + r},${yy}H${x + w - r}Q${x + w},${yy} ${x + w},${yy + r}V${yy + h}Z`; };
+  const base = shifted(); base.setHours(12, 0, 0, 0);
+  const label = i => { const d = new Date(base); d.setDate(d.getDate() + i); return `${d.getMonth() + 1}/${d.getDate()}（${WD[d.getDay()]}）`; };
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="min-width:420px;max-width:760px;display:block" role="img" aria-label="今後30日の復習予定枚数">`;
+  [0, max / 2, max].forEach(v => s += `<line x1="${L}" x2="${W}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L - 6}" y="${y(v) + 3}" text-anchor="end">${Math.round(v)}</text>`);
+  cnt.forEach((v, i) => {
+    const x = L + i * bw + 1, w = bw - 2;
+    s += `<path d="${bar(x, y(v), w, T + ph - y(v))}" fill="var(--bar)"/>`;
+    s += `<rect x="${L + i * bw}" y="${T}" width="${bw}" height="${ph}" fill="transparent" data-tip="${i === 0 ? '今日（期限切れ含む）' : label(i)}　${v} 枚"/>`;
+  });
+  [0, 7, 14, 21, 28].forEach(i => s += `<text x="${L + i * bw + bw / 2}" y="${H - 6}" text-anchor="middle">${i ? i + '日後' : '今日'}</text>`);
+  return s + '</svg>';
+}
+// 予測（FSRS の記憶率）と実測（実際に思い出せた割合）の比較。直近90日の「日をまたいだ復習」が対象
+function calibHTML() {
+  const from = Date.now() - 90 * DAY, L = D.log.filter(x => x.r != null && x.t >= from);
+  const pct = v => Math.round(v * 100) + '%';
+  const head = `<h2>記憶率の検証</h2><div class="sub">目標 ${pct(D.settings.retention)} に対して、復習で実際に思い出せた割合（直近90日）。予測と実測が近いほど、間隔の計算があなたの記憶に合っています。</div>`;
+  if (L.length < 20) return `<div class="panel chart-box">${head}<p class="sub" style="margin-top:10px">日をまたいだ復習が ${L.length} 件です。20件を超えると表示します。</p></div>`;
+  const act = L.filter(x => x.ok).length / L.length, pred = L.reduce((a, x) => a + x.r, 0) / L.length;
+  const bins = [[0, .7, '70%未満'], [.7, .8, '70〜80%'], [.8, .9, '80〜90%'], [.9, 1.01, '90%以上']].map(([lo, hi, l]) => {
+    const b = L.filter(x => x.r >= lo && x.r < hi); return { l, n: b.length, p: b.length && b.reduce((a, x) => a + x.r, 0) / b.length, a: b.length && b.filter(x => x.ok).length / b.length };
+  }).filter(b => b.n);
+  const gap = act - pred;
+  const verdict = Math.abs(gap) < 0.04 ? '予測どおりです' : gap < 0 ? '予測より忘れやすい傾向です。目標記憶率を上げると間隔が短くなります' : '予測より覚えている傾向です。目標記憶率を下げても大丈夫そうです';
+  return `<div class="panel chart-box">${head}
+    <div class="row" style="gap:28px;margin:12px 0 4px">
+      <div><div class="sub">実測</div><div style="font-size:24px;font-weight:700">${pct(act)}</div></div>
+      <div><div class="sub">予測</div><div style="font-size:24px;font-weight:700">${pct(pred)}</div></div>
+      <div><div class="sub">件数</div><div style="font-size:24px;font-weight:700">${L.length}</div></div>
+      <div class="sub" style="flex:1;min-width:200px">${verdict}${L.length < 100 ? '（件数が少ないうちは誤差が大きいです）' : ''}</div>
+    </div>
+    <details><summary>予測記憶率ごとの内訳</summary><div class="tbl-wrap"><table><thead><tr><th>予測記憶率</th><th>件数</th><th>予測の平均</th><th>実測</th></tr></thead><tbody>
+      ${bins.map(b => `<tr><td>${b.l}</td><td class="num">${b.n}</td><td class="num">${pct(b.p)}</td><td class="num">${pct(b.a)}</td></tr>`).join('')}</tbody></table></div></details>
+  </div>`;
+}
+function vStats() {
+  const cs = D.cards, t = today();
+  const st = { new: 0, learn: 0, young: 0, mature: 0 };
+  cs.forEach(c => { if (c.s.st === 'new') st.new++; else if (c.s.st !== 'review') st.learn++; else if (c.s.ivl >= 21) st.mature++; else st.young++; });
+  const days = Object.keys(D.daily).filter(k => D.daily[k].cnt);
+  const total = days.reduce((a, k) => a + D.daily[k].cnt, 0);
+  const okAll = days.reduce((a, k) => a + D.daily[k].ok, 0), ngAll = days.reduce((a, k) => a + D.daily[k].ng, 0);
+  const fc = forecast();
+  const weak = cs.filter(isWeak).sort((a, b) => (b.s.lapses * 2 + b.st.ng - b.st.ok * .5) - (a.s.lapses * 2 + a.st.ng - a.st.ok * .5));
+  const tiles = [['今日', `${t.cnt} 枚`, `${Math.round(t.time / MIN)} 分`], ['連続学習', `${streak()} 日`, `学習した日 ${days.length} 日`], ['累計', `${total} 枚`, `正答率 ${okAll + ngAll ? Math.round(okAll / (okAll + ngAll) * 100) : 0}%`], ['定着（間隔21日以上）', `${st.mature} 枚`, `全 ${cs.length} 枚中`]];
+  return `<h1>統計</h1>
+  <div class="tiles" style="margin-bottom:16px">${tiles.map(([k, v, s]) => `<div class="panel tile"><div class="k">${k}</div><div class="v">${v}</div><div class="sub">${s}</div></div>`).join('')}</div>
+  ${calibHTML()}
+  <div class="panel chart-box"><h2>学習の記録</h2><div class="sub">1マス＝1日。濃いほど多く学習した日</div>
+    <div class="chart-scroll">${heatmapSVG()}</div>
+    <div class="legend">少 <i style="background:var(--h0)"></i><i style="background:var(--h1)"></i><i style="background:var(--h2)"></i><i style="background:var(--h3)"></i><i style="background:var(--h4)"></i> 多</div>
+  </div>
+  <div class="panel chart-box"><h2>今後30日の復習予定</h2><div class="sub">合計 ${fc.reduce((a, b) => a + b, 0)} 枚 ・ 今日 ${fc[0]} 枚</div>
+    <div class="chart-scroll">${forecastSVG(fc)}</div>
+    <details><summary>表で見る</summary><div class="tbl-wrap"><table><tbody>${fc.map((v, i) => v ? `<tr><td>${i ? i + '日後' : '今日'}</td><td class="num">${v} 枚</td></tr>` : '').join('')}</tbody></table></div></details>
+  </div>
+  <div class="grid2">
+    <div class="panel chart-box"><h2>カードの状態</h2>
+      <table style="margin-top:8px"><tbody>
+        <tr><td><span class="n-new">●</span> 未学習</td><td class="num">${st.new}</td></tr>
+        <tr><td><span class="n-learn">●</span> 学習中</td><td class="num">${st.learn}</td></tr>
+        <tr><td><span class="n-rev">●</span> 復習（間隔21日未満）</td><td class="num">${st.young}</td></tr>
+        <tr><td><span class="n-rev">●</span> 定着（間隔21日以上）</td><td class="num">${st.mature}</td></tr>
+      </tbody></table></div>
+    <div class="panel chart-box"><div class="row"><h2>苦手なカード</h2><div class="spacer"></div>${weak.length ? `<button class="btn sm primary" data-act="practiceWeak">苦手 ${weak.length} 枚を練習</button>` : ''}</div>
+      ${weak.length ? `<table style="margin-top:8px"><tbody>${weak.slice(0, 10).map(c => `<tr class="click" data-act="editRow" data-id="${c.id}"><td class="clip">${esc(c.q)}</td><td class="num muted">✕${c.st.ng} ○${c.st.ok}</td></tr>`).join('')}</tbody></table>` : '<p class="sub">今のところありません</p>'}
+    </div>
+  </div>`;
+}
+
+/* ---------- 設定 ---------- */
+// 毎回「覚えた」だった場合に間隔がどう伸びるか（fuzz なし）
+function simPath(n = 7) {
+  let s = newSRS(), t = Date.now(); const out = [];
+  for (let i = 0; i < n; i++) { s = schedule(s, true, t); out.push(fmtDays(s.ivl)); t = s.due; }
+  return out;
+}
+function vSettings() {
+  const S = D.settings;
+  const num = (k, l, min, max, hint = '') => `<label>${l}<input type="number" name="${k}" min="${min}" max="${max}" value="${S[k]}">${hint ? `<span class="sub">${hint}</span>` : ''}</label>`;
+  return `<div style="max-width:720px;margin:0 auto"><h1>設定</h1>
+  <form id="fSet" class="panel pad">
+    <h2 style="margin-bottom:12px">学習</h2>
+    <label>目標記憶率<select name="retention">${[0.8, 0.85, 0.9, 0.93, 0.95].map(r => `<option value="${r}" ${S.retention === r ? 'selected' : ''}>${Math.round(r * 100)}%${r === 0.9 ? '（おすすめ）' : ''}</option>`).join('')}</select>
+      <span class="sub">復習の時点で思い出せる確率をこの値に保つよう、間隔を計算します（FSRS）。上げるほど確実に覚えられますが、復習の回数が増えます。</span></label>
+    <div class="exp" style="margin:-4px 0 16px">毎回「覚えた」だった場合の復習間隔：<b>${simPath().join(' → ')}</b></div>
+    <div class="grid2">
+      ${num('newPerDay', '1日の新規カード数（デッキごと）', 0, 9999)}
+      ${num('maxReviews', '1日の復習上限（デッキごと）', 0, 99999)}
+      <label>覚えるまでの確認間隔（分・スペース区切り）<input name="learnSteps" value="${S.learnSteps.join(' ')}"><span class="sub">新しいカードを「覚えてない」にした後の再出題間隔</span></label>
+      <label>忘れたときの確認間隔（分）<input name="relearnSteps" value="${S.relearnSteps.join(' ')}"></label>
+      ${num('maxIvl', '復習間隔の上限（日）', 1, 36500)}
+      ${num('dayStartHour', '日付の切り替わり時刻（時）', 0, 23)}
+      ${num('leech', '「苦手」と判定する忘れた回数', 2, 99)}
+    </div>
+    <label class="chk"><input type="checkbox" name="autoChoice" ${S.autoChoice ? 'checked' : ''}> 選択式で誤答が足りないとき、他のカードの答えから自動で補う</label>
+    <h2 style="margin:18px 0 12px">表示</h2>
+    <label>テーマ<select name="theme"><option value="system" ${S.theme === 'system' ? 'selected' : ''}>OSに合わせる</option><option value="light" ${S.theme === 'light' ? 'selected' : ''}>ライト</option><option value="dark" ${S.theme === 'dark' ? 'selected' : ''}>ダーク</option></select></label>
+  </form>
+  <div class="panel pad" style="margin-top:16px">
+    <h2 style="margin-bottom:6px">データ</h2>
+    <p class="sub">データはこのブラウザの中だけに保存されています（<span id="usage">…</span>）。ブラウザのデータ消去で消えるので、ときどきバックアップを書き出してください。</p>
+    <div class="row">
+      <button class="btn primary" data-act="backup">バックアップを書き出す（画像込み）</button>
+      <button class="btn" data-act="restore">バックアップから復元</button><input type="file" id="restoreFile" accept=".json" hidden>
+      <button class="btn" data-act="exportCsv">全カードをCSVで書き出す</button>
+      <div class="spacer"></div>
+      <button class="btn danger" data-act="wipe">すべて削除</button>
+    </div>
+  </div></div>`;
+}
+after.settings = () => {
+  $('#fSet').addEventListener('change', e => {
+    const S = D.settings, el = e.target, k = el.name;
+    if (el.type === 'checkbox') S[k] = el.checked;
+    else if (k === 'learnSteps' || k === 'relearnSteps') { const v = el.value.split(/[\s,]+/).map(Number).filter(n => n > 0); if (k === 'learnSteps' && !v.length) return toast('1つ以上指定してください'); S[k] = v; }
+    else if (k === 'retention') { S.retention = +el.value; save(); render(); return toast('目標記憶率を変更しました（次の復習から反映）'); }
+    else if (el.type === 'number') S[k] = Math.max(+el.min, Math.min(+el.max, Math.round(+el.value || 0)));
+    else S[k] = el.value;
+    applyTheme(); save(); toast('設定を保存しました');
+  });
+  $('#restoreFile').addEventListener('change', e => e.target.files[0] && restore(e.target.files[0]));
+  if (navigator.storage && navigator.storage.estimate) navigator.storage.estimate().then(r => { const u = $('#usage'); if (u) u.textContent = `使用量 約 ${(r.usage / 1048576).toFixed(1)} MB`; });
+};
+function applyTheme() { const t = D.settings.theme; if (t === 'system') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t; }
+function download(name, blob) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); }
+function saveFile(name, blob) {
+  if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && navigator.canShare) {
+    const f = new File([blob], name, { type: blob.type });
+    if (navigator.canShare({ files: [f] })) {
+      // 共有シートはタップの直後にしか開けないので、準備ができてからボタンを押してもらう
+      document.body.insertAdjacentHTML('beforeend', `<div class="ov" id="ov"><div class="panel dlg" style="width:min(420px,100%);text-align:center">
+        <h2>ファイルの準備ができました</h2><p class="sub">${esc(name)}（${(blob.size / 1048576).toFixed(1)} MB）<br>次の画面で「"ファイル"に保存」を選ぶと iPhone に保存できます。</p>
+        <div class="row" style="justify-content:center"><button class="btn" data-act="ovClose">閉じる</button><button class="btn primary" id="shareBtn">保存・共有</button></div></div></div>`);
+      $('#shareBtn').onclick = () => { navigator.share({ files: [f] }).catch(() => {}); closeOverlay(); };
+      return;
+    }
+  }
+  download(name, blob);
+}
+const blobToDataURL = b => new Promise(r => { const f = new FileReader(); f.onload = () => r(f.result); f.readAsDataURL(b); });
+async function backup() {
+  await flush(); const images = {};
+  for (const k of await idbKeys('img')) { const b = await idbGet('img', k); if (b) images[k] = await blobToDataURL(b); }
+  toast('バックアップを作成中…');
+  saveFile(`まなびカード_バックアップ_${dayKey()}.json`, new Blob([JSON.stringify({ app: 'manabi-card', v: 1, at: Date.now(), data: D, images })], { type: 'application/json' }));
+  D.lastBackup = Date.now(); save();
+}
+async function restore(file) {
+  try {
+    const j = JSON.parse(await file.text()); if (j.app !== 'manabi-card' || !j.data) throw new Error('このアプリのバックアップではありません');
+    if (!confirm(`バックアップ（カード ${j.data.cards.length} 枚）で現在のデータを置き換えます。よろしいですか？`)) return;
+    for (const k of await idbKeys('img')) await idbDel('img', k);
+    for (const [k, u] of Object.entries(j.images || {})) await idbPut('img', k, await (await fetch(u)).blob());
+    imgCache.clear(); D = j.data; D.settings = { ...DEFAULTS, ...D.settings }; migrateSRS(); await flush(); applyTheme(); toast('復元しました'); go('home');
+  } catch (e) { toast('復元に失敗：' + e.message, 5000); }
+}
+function exportCsv() {
+  const q = s => '"' + String(s ?? '').replace(/"/g, '""') + '"';
+  const lines = [['デッキ', '形式', '問題', '答え', '選択肢', '解説', 'タグ'].join(',')].concat(D.cards.map(c => [deckName(c.deck), TYPE_LABEL[c.type], c.q, c.a, (c.ch || []).join('｜'), c.ex, (c.tags || []).join(' ')].map(q).join(',')));
+  saveFile(`まなびカード_${dayKey()}.csv`, new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv' }));
+}
+
+/* ============================================================
+   イベント
+   ============================================================ */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act],[data-go]'); if (!el) return;
+  if (el.dataset.go) { go(el.dataset.go, el.dataset.deck ? { deck: el.dataset.deck } : {}); return; }
+  const d = el.dataset, a = d.act;
+  if (a === 'editRow' && e.target.closest('.brChk')) return;
+  switch (a) {
+    case 'study': startSRS(d.deck); break;
+    case 'deckMenu': deckMenu(d.deck); break;
+    case 'deckDel': deleteDeck($('#fDeck').dataset.id); break;
+    case 'phShot': $('#camIn').dataset.k = d.k; $('#camIn').click(); break;
+    case 'phPick': $('#picIn').dataset.k = d.k; $('#picIn').click(); break;
+    case 'phBatchPick': $('#picIn').dataset.k = 'batch'; $('#picIn').click(); break;
+    case 'phEdit': phEdit(d.k, +d.i); break;
+    case 'phDel': { const p = PH[d.k].splice(+d.i, 1)[0]; if (p) URL.revokeObjectURL(p.url); render(); break; }
+    case 'phSame': phSame(); break;
+    case 'phSave': phSave(); break;
+    case 'pairSwap': { const p = PH.batch[+d.i]; [p.q, p.a] = [p.a, p.q]; render(); break; }
+    case 'pairDel': { const p = PH.batch.splice(+d.i, 1)[0]; [p.q, p.a].forEach(x => x && URL.revokeObjectURL(x.url)); render(); break; }
+    case 'pairDelImg': pairDelImg(+d.i, d.k); break;
+    case 'batchSave': batchSave(); break;
+    case 'batchCancel': PH.batch.forEach(p => [p.q, p.a].forEach(x => x && URL.revokeObjectURL(x.url))); PH.batch = null; render(); break;
+    case 'hideInstall': D.hideInstall = true; save(); render(); break;
+    case 'reveal': reveal(); break;
+    case 'pick': pick(+d.i); break;
+    case 'dontKnow': submitInput(''); break;
+    case 'commit': commit(d.ok === '1'); break;
+    case 'override': SES.correct = !SES.correct; render(); break;
+    case 'undo': undo(); break;
+    case 'endStudy': SES = null; go('home'); break;
+    case 'editCur': editCur(); break;
+    case 'flagCur': { const c = byId(SES.cur); c.flag = !c.flag; save(); render(); break; }
+    case 'suspCur': { const c = byId(SES.cur); c.susp = true; save(); toast('このカードは出題しないようにしました（カード一覧から戻せます）'); nextCard(); break; }
+    case 'retryWrong': startPractice(SES.results.filter(x => !x.ok).map(x => x.id), SES.pref, '間違えた問題'); break;
+    case 'zoom': if (el.src) { document.body.insertAdjacentHTML('beforeend', `<div class="lightbox" id="lb"><img src="${esc(el.src)}" alt=""></div>`); } break;
+    case 'addImg': $('#imgFile').dataset.field = d.field; $('#imgFile').click(); break;
+    case 'rmImg': { const i = FORM[d.field].indexOf(d.id); if (i >= 0) FORM[d.field].splice(i, 1); renderThumbs(d.field); break; }
+    case 'ovClose': closeOverlay(); break;
+    case 'ovDel': { const id = $('#fEdit').dataset.id; if (!confirm('このカードを削除しますか？')) break; const c = byId(id); dropCardImages(c); D.cards = D.cards.filter(x => x.id !== id); save(); closeOverlay(); toast('削除しました'); if (route === 'study') nextCard(); else render(); break; }
+    case 'ovReset': { const c = byId($('#fEdit').dataset.id); if (!confirm('学習状況（間隔・正誤の記録）をリセットしますか？')) break; c.s = newSRS(); c.st = { ok: 0, ng: 0, last: 0, lastNg: 0 }; save(); closeOverlay(); toast('リセットしました'); render(); break; }
+    case 'editRow': openEditor(d.id, route === 'browse' ? brList : null); break;
+    case 'brMore': BR.limit += 300; brList(); break;
+    case 'brPractice': startPractice(shuffle([...BR.sel]), 'auto', '選択したカード'); break;
+    case 'brFlag': case 'brSusp': { const k = a === 'brFlag' ? 'flag' : 'susp'; const cs = [...BR.sel].map(byId).filter(Boolean); const v = !cs.every(c => c[k]); cs.forEach(c => c[k] = v); save(); brList(); break; }
+    case 'brReset': if (confirm(`${BR.sel.size} 枚の学習状況をリセットしますか？`)) { BR.sel.forEach(id => { const c = byId(id); if (c) { c.s = newSRS(); c.st = { ok: 0, ng: 0, last: 0, lastNg: 0 }; } }); save(); brList(); } break;
+    case 'brDel': if (confirm(`${BR.sel.size} 枚を削除しますか？`)) { D.cards.filter(c => BR.sel.has(c.id)).forEach(dropCardImages); D.cards = D.cards.filter(c => !BR.sel.has(c.id)); BR.sel.clear(); save(); toast('削除しました'); brList(); } break;
+    case 'impCommit': commitImport(); break;
+    case 'copyPrompt': navigator.clipboard.writeText(aiPrompt()).then(() => toast('コピーしました。AIに貼り付けて送ってください'), () => toast('コピーできませんでした。枠内を選択してコピーしてください')); break;
+    case 'practiceWeak': startPractice(shuffle(D.cards.filter(isWeak).map(c => c.id)), 'auto', '苦手カード'); break;
+    case 'backup': backup(); break;
+    case 'restore': $('#restoreFile').click(); break;
+    case 'exportCsv': exportCsv(); break;
+    case 'wipe': if (confirm('すべてのカードとデッキ、学習記録を削除します。元に戻せません。よろしいですか？') && confirm('本当に削除しますか？（バックアップはありますか？）')) wipe(); break;
+  }
+});
+document.addEventListener('click', e => { if (e.target.closest('#lb')) $('#lb').remove(); });
+document.addEventListener('change', e => {
+  if (e.target.classList.contains('brChk')) { e.target.checked ? BR.sel.add(e.target.dataset.id) : BR.sel.delete(e.target.dataset.id); brList(); }
+  if (e.target.id === 'prefSel') { SES.pref = e.target.value; show(byId(SES.cur)); }
+  if (e.target.id === 'camIn' || e.target.id === 'picIn') {
+    const files = [...e.target.files], k = e.target.dataset.k; e.target.value = '';
+    if (k === 'batch') phBatchFiles(files); else phAddFiles(files, k);
+  }
+  if (e.target.id === 'imgFile') { addImages([...e.target.files], e.target.dataset.field); e.target.value = ''; }
+});
+document.addEventListener('submit', e => {
+  e.preventDefault(); const f = e.target;
+  if (f.id === 'fNewDeck') { const n = f.name.value.trim(); if (!n) return; if (D.decks.some(d => d.name === n)) return toast('同じ名前のデッキがあります'); ensureDeck(n); save(); render(); }
+  if (f.id === 'fAdd') submitAdd();
+  if (f.id === 'fEdit') submitEdit(f);
+  if (f.id === 'fDeck') { const n = f.name.value.trim(); if (n) { deckById(f.dataset.id).name = n; save(); closeOverlay(); render(); } }
+  if (f.id === 'fAns') submitInput($('#ans').value);
+  if (f.id === 'fPractice') {
+    const o = Object.fromEntries(new FormData(f)); let cs = practiceFilter(o);
+    cs = o.order === 'seq' ? cs.sort((a, b) => a.created - b.created) : o.order === 'forget' ? cs.sort((a, b) => (cardR(a) ?? -1) - (cardR(b) ?? -1)) : o.order === 'weak' ? cs.sort((a, b) => (b.st.ng - b.st.ok) - (a.st.ng - a.st.ok)) : shuffle(cs);
+    if (+o.n) cs = cs.slice(0, +o.n);
+    startPractice(cs.map(c => c.id), o.pref, o.deck ? deckName(o.deck) : '練習モード');
+  }
+});
+document.addEventListener('paste', e => {
+  const cf = $('#cf'); if (!cf) return;
+  const files = [...(e.clipboardData || {}).files || []].filter(f => f.type.startsWith('image/')); if (!files.length) return;
+  e.preventDefault(); const n = document.activeElement && document.activeElement.name;
+  addImages(files, n === 'a' || n === 'ex' || n === 'ch' ? 'ai' : 'qi'); toast('画像を追加しました');
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { const lb = $('#lb'); if (lb) return lb.remove(); if ($('#ov')) return closeOverlay(); }
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { const f = e.target.closest && e.target.closest('#fAdd,#fEdit'); if (f) { e.preventDefault(); f.requestSubmit(); return; } }
+  if (route !== 'study' || !SES || SES.finished || $('#ov') || $('#lb') || e.isComposing || e.keyCode === 229) return;
+  const inField = /INPUT|TEXTAREA|SELECT/.test(e.target.tagName);
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !inField) { e.preventDefault(); return undo(); }
+  if (inField || e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key;
+  if (SES.phase === 'question') {
+    if (SES.f === 'flash' && (k === ' ' || k === 'Enter')) { e.preventDefault(); reveal(); }
+    else if (SES.f === 'choice' && /^[1-9]$/.test(k)) pick(+k - 1);
+  } else if (SES.f === 'flash') {
+    if (k === '1' || k === 'ArrowLeft') commit(false);
+    else if (k === '2' || k === 'ArrowRight' || k === ' ' || k === 'Enter') { e.preventDefault(); commit(true); }
+  } else {
+    if (k === 'Enter' || k === ' ' || k === 'ArrowRight') { e.preventDefault(); commit(SES.correct); }
+    else if (k.toLowerCase() === 'j') { SES.correct = !SES.correct; render(); }
+  }
+  if (k.toLowerCase() === 'u') undo();
+  if (k.toLowerCase() === 'e') { e.preventDefault(); editCur(); }
+});
+function editCur() { openEditor(SES.cur, () => show(byId(SES.cur) || {})); }
+function deckMenu(id) {
+  const d = deckById(id); const n = D.cards.filter(c => c.deck === id).length;
+  document.body.insertAdjacentHTML('beforeend', `<div class="ov" id="ov"><form class="panel dlg" id="fDeck" data-id="${id}" style="width:min(440px,100%)">
+    <div class="row" style="margin-bottom:12px"><h2>デッキの設定</h2><div class="spacer"></div><button type="button" class="btn sm" data-act="ovClose">閉じる</button></div>
+    <label>デッキ名<input name="name" value="${esc(d.name)}" required></label>
+    <div class="row"><button type="button" class="btn sm danger" data-act="deckDel">デッキを削除（${n} 枚）</button><div class="spacer"></div><button class="btn primary">保存</button></div>
+  </form></div>`);
+  $('#ov').addEventListener('mousedown', e => { if (e.target.id === 'ov') closeOverlay(); });
+  $('#fDeck [name=name]').select();
+}
+function deleteDeck(id) {
+  const d = deckById(id); const n = D.cards.filter(c => c.deck === id).length;
+  if (!confirm(`「${d.name}」とカード ${n} 枚を削除します。よろしいですか？`)) return;
+  D.cards.filter(c => c.deck === id).forEach(dropCardImages);
+  D.cards = D.cards.filter(c => c.deck !== id); D.decks = D.decks.filter(x => x.id !== id); save(); closeOverlay(); render(); toast('削除しました');
+}
+async function wipe() {
+  for (const k of await idbKeys('img')) await idbDel('img', k);
+  D = { decks: [], cards: [], log: [], daily: {}, settings: { ...D.settings } }; await flush(); go('home'); toast('すべて削除しました');
+}
+/* ツールチップ（グラフ） */
+const tip = $('#tip');
+document.addEventListener('mouseover', e => { const t = e.target.closest && e.target.closest('[data-tip]'); if (t) { tip.textContent = t.dataset.tip; tip.hidden = false; } });
+document.addEventListener('mousemove', e => { if (!tip.hidden) { const x = Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8); tip.style.left = x + 'px'; tip.style.top = (e.clientY - 36) + 'px'; } });
+document.addEventListener('mouseout', e => { if (e.target.closest && e.target.closest('[data-tip]')) tip.hidden = true; });
+
+/* ============================================================
+   起動
+   ============================================================ */
+(async function init() {
+  try { idb = await openDB(); }
+  catch (e) { $('#app').innerHTML = `<div class="panel empty">このブラウザではデータを保存できません（${esc(e.message)}）。Chrome か Edge で開いてください。</div>`; return; }
+  D = await idbGet('kv', 'data');
+  if (!D) { D = { decks: [], cards: [], log: [], daily: {}, settings: {} }; D.settings = { ...DEFAULTS }; seed(); await flush(); }
+  D.settings = { ...DEFAULTS, ...D.settings };
+  migrateSRS();
+  applyTheme();
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  gcImages();
+  render();
+})();
+</script>
+</body>
+</html>
