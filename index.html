@@ -106,9 +106,17 @@ label>input,label>select,label>textarea{margin-top:4px;font-size:15px;color:var(
 .tile .v{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.3}
 .tile .k{font-size:12px;color:var(--ink2)}
 .hero{display:grid;gap:12px;margin-bottom:28px}
-.hero-go{display:flex;align-items:center;gap:16px 24px;padding:18px 22px;flex-wrap:wrap}
-.hero-go .counts{font-size:22px;gap:20px}
-.hero-go .counts small{font-size:13px}
+.go-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.go-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:16px 18px;text-align:left;cursor:pointer;color:var(--ink)}
+.go-card:disabled{opacity:.5;cursor:default}
+.go-k{font-size:13px;color:var(--ink2)}
+.go-n{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.3}
+.go-n small{font-size:13px;font-weight:400}
+.go-t{font-size:18px;font-weight:700;padding-right:28px;word-break:break-word}
+.go-s{font-size:12px;color:var(--ink3)}
+.go-main{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.go-main .go-k,.go-main .go-s{color:inherit;opacity:.85}
+.go-arrow{position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:30px;line-height:1;opacity:.85}
 .sec-h{display:flex;align-items:center;gap:12px;margin:0 0 12px;flex-wrap:wrap}
 .decks{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
 .deck{padding:16px 18px;display:flex;flex-direction:column;gap:10px}
@@ -226,8 +234,9 @@ svg text{fill:var(--ink3);font-size:10px;font-family:inherit}
 details summary{cursor:pointer;font-size:13px;color:var(--ink2);margin-top:8px}
 
 /* home */
-.quick{display:flex;gap:10px;flex-wrap:wrap}
-.quick .btn{flex:1;min-width:140px;padding:12px}
+.menu-list{display:grid;gap:8px;margin-bottom:16px}
+.menu-list .btn{text-align:left;padding:12px 14px;display:flex;flex-direction:column;align-items:flex-start;gap:0}
+.menu-list .btn small{font-size:12px;color:var(--ink3);font-weight:400}
 .banner{padding:14px 18px;margin-bottom:14px;display:flex;gap:10px 16px;align-items:center;flex-wrap:wrap;border-color:var(--acc)}
 .banner p{margin:0;flex:1;min-width:220px;font-size:14px}
 /* 写真で追加 */
@@ -263,7 +272,9 @@ details summary{cursor:pointer;font-size:13px;color:var(--ink2);margin-top:8px}
 .crop-bar .btn.primary{background:#2a78d6;border-color:#2a78d6}
 .mini{height:34px;width:34px;object-fit:cover;border-radius:6px;vertical-align:middle;margin-right:6px;background:var(--panel2)}
 #tabbar{display:none}
-button,.btn,.opt,.judge,.link{touch-action:manipulation}
+html,button,.btn,.opt,.judge,.link{touch-action:manipulation}
+/* iPhone は 16px 未満の入力欄をタップすると画面を拡大するので、スマホでは 16px にそろえる */
+@media (pointer:coarse){input,select,textarea,label>input,label>select,label>textarea{font-size:16px!important}}
 .qcard .imgs img{max-height:min(62vh,560px);max-width:100%}
 
 @media (max-width:760px){
@@ -301,9 +312,7 @@ button,.btn,.opt,.judge,.link{touch-action:manipulation}
   <div class="brand" data-go="home"><i></i><span>まなびカード</span></div>
   <nav id="nav">
     <button data-go="home">ホーム</button>
-    <button data-go="photo">写真で追加</button>
-    <button data-go="import">取り込み</button>
-    <button data-go="add">追加</button>
+    <button data-act="addMenu">追加</button>
     <button data-go="browse">カード一覧</button>
     <button data-go="stats">統計</button>
     <button data-go="settings">設定</button>
@@ -312,7 +321,7 @@ button,.btn,.opt,.judge,.link{touch-action:manipulation}
 <main id="app"><div class="empty">読み込み中…</div></main>
 <nav id="tabbar">
   <button data-go="home"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>ホーム</button>
-  <button data-go="photo"><svg viewBox="0 0 24 24"><path d="M4 7.5h3l2-3h6l2 3h3a1 1 0 0 1 1 1V19a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8.5a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg>写真で追加</button>
+  <button data-act="addMenu"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>追加</button>
   <button data-go="browse"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>一覧</button>
   <button data-go="stats"><svg viewBox="0 0 24 24"><path d="M4 20V11M10 20V5M16 20v-6M21 20H3"/></svg>統計</button>
   <button data-go="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>設定</button>
@@ -605,7 +614,7 @@ function go(r, p = {}) {
   route = r; RP = p; render(); scrollTo(0, 0);
 }
 function render() {
-  $$('#nav button, #tabbar button').forEach(b => b.classList.toggle('on', b.dataset.go === route || (route === 'practice' && b.dataset.go === 'home')));
+  $$('#nav button, #tabbar button').forEach(b => b.classList.toggle('on', b.dataset.go === route || (route === 'practice' && b.dataset.go === 'home') || (b.dataset.act === 'addMenu' && ['photo', 'add', 'import'].includes(route))));
   document.body.classList.toggle('studying', route === 'study');
   const V = { home: vHome, photo: vPhoto, study: vStudy, practice: vPracticeSetup, add: vAdd, browse: vBrowse, import: vImport, stats: vStats, settings: vSettings }[route] || vHome;
   $('#app').innerHTML = V();
@@ -637,36 +646,27 @@ function streak() {
   return n;
 }
 function vHome() {
-  const t = today(), all = deckCounts(D.decks.map(d => d.id));
-  const acc = t.ok + t.ng ? Math.round(t.ok / (t.ok + t.ng) * 100) + '%' : '—';
-  const tiles = [['今日の学習', t.cnt + '<small class="muted" style="font-size:13px"> 枚</small>'], ['正答率（今日）', acc], ['連続学習', streak() + '<small class="muted" style="font-size:13px"> 日</small>'], ['カード総数', D.cards.length]];
+  const all = deckCounts(D.decks.map(d => d.id)), rev = all.lr + all.rv, res = resumeInfo();
   return `${bannersHTML()}
   <div class="hero">
-    <div class="panel hero-go">
-      <div><div class="sub">今日やる分</div>
-      <div class="counts"><span class="n-new">${all.nw}<small>新規</small></span><span class="n-learn">${all.lr}<small>学習中</small></span><span class="n-rev">${all.rv}<small>復習</small></span></div></div>
-      <div class="spacer"></div>
-      <button class="btn primary big" data-act="study" data-deck="*" ${all.sum ? '' : 'disabled'}>${all.sum ? 'まとめて学習する' : '今日の分は完了'}</button>
+    ${res ? `<button class="panel go-card go-main" data-act="resume"><span class="go-k">続きから</span><span class="go-t">${esc(res.title)}</span><span class="go-s">あと ${res.left} 枚</span><span class="go-arrow">›</span></button>` : ''}
+    <div class="go-row">
+      <button class="panel go-card" data-act="review" ${rev ? '' : 'disabled'}><span class="go-k">復習</span><span class="go-n">${rev ? rev + '<small> 枚</small>' : 'なし'}</span><span class="go-s">期日が来たカードだけ</span></button>
+      <button class="panel go-card ${!res && all.sum ? 'go-main' : ''}" data-act="study" data-deck="*" ${all.sum ? '' : 'disabled'}><span class="go-k">今日やる分</span><span class="go-n">${all.sum ? all.sum + '<small> 枚</small>' : '完了'}</span><span class="go-s">新規 ${all.nw}・復習 ${rev}</span></button>
     </div>
-    <div class="quick">
-    <button class="btn primary" data-go="photo">📷 写真で追加</button>
-    <button class="btn" data-go="add">✎ 文字で追加</button>
-    <button class="btn" data-go="import">⇩ 取り込み</button>
-    </div>
-    <div class="tiles">${tiles.map(([k, v]) => `<div class="panel tile"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('')}</div>
   </div>
   <div class="sec-h">
     <h2>デッキ</h2><div class="spacer"></div>
-    <form id="fNewDeck" class="inline"><input name="name" placeholder="新しいデッキ名" required><button class="btn">作成</button></form>
+    <button class="btn sm" data-act="newDeck">＋ デッキ</button>
   </div>
   ${D.decks.length ? `<div class="decks">${D.decks.map(deckCardHTML).join('')}</div>` :
-      `<div class="panel empty">まだデッキがありません。<br>上で作成するか、<button class="link" data-go="import">取り込み</button>から単語リストを読み込んでください。</div>`}`;
+      `<div class="panel empty">まだデッキがありません。<br>下の「追加」からカードを作ると、デッキもできます。</div>`}`;
 }
 function deckCardHTML(d) {
   const c = deckCounts([d.id]);
   const weak = D.cards.filter(x => x.deck === d.id && isWeak(x)).length;
   return `<div class="panel deck">
-    <div class="deck-h"><div class="deck-name">${esc(d.name)}</div><button class="menu-btn" data-act="deckMenu" data-deck="${d.id}" title="デッキの操作">⋯</button></div>
+    <div class="deck-h"><div class="deck-name">${esc(d.name)}</div><button class="menu-btn" data-act="deckMenu" data-deck="${d.id}" title="練習・追加・設定">⋯</button></div>
     <div class="deck-c">
       <div><b class="n-new">${c.nw}</b><span>新規</span></div>
       <div><b class="n-learn">${c.lr}</b><span>学習中</span></div>
@@ -676,28 +676,26 @@ function deckCardHTML(d) {
     </div>
     <div class="deck-a">
       <button class="btn primary sm" data-act="study" data-deck="${d.id}" ${c.sum ? '' : 'disabled'}>${c.sum ? '学習する' : '今日は完了'}</button>
-      <button class="btn sm" data-go="practice" data-deck="${d.id}">練習モード</button>
-      <button class="btn sm" data-go="add" data-deck="${d.id}">＋ 追加</button>
     </div>
   </div>`;
 }
 
 /* ---------- 学習セッション ---------- */
 let SES = null;
-function startSRS(deckSel) {
+function startSRS(deckSel, noNew = false) {
   const ids = deckSel === '*' ? D.decks.map(d => d.id) : [deckSel];
   const now = Date.now(); let revs = [], news = [];
   for (const id of ids) {
     const cs = D.cards.filter(c => c.deck === id && !c.susp), al = allowance(id);
     revs.push(...cs.filter(c => c.s.st === 'review' && c.s.due <= now).sort((a, b) => cardR(a, now) - cardR(b, now)).slice(0, al.r));   // 忘れかけている順
-    news.push(...cs.filter(c => c.s.st === 'new').sort((a, b) => a.created - b.created).slice(0, al.n));
+    if (!noNew) news.push(...cs.filter(c => c.s.st === 'new').sort((a, b) => a.created - b.created).slice(0, al.n));
   }
   revs.sort((a, b) => cardR(a, now) - cardR(b, now));
   // 新規カードを復習の中に均等に混ぜる
   const q = []; const gap = news.length ? Math.max(1, Math.floor(revs.length / news.length)) : 0;
   let ni = 0; revs.forEach((c, i) => { q.push(c.id); if (gap && (i + 1) % gap === 0 && ni < news.length) q.push(news[ni++].id); });
   while (ni < news.length) q.push(news[ni++].id);
-  SES = { mode: 'srs', decks: new Set(ids), deckSel, queue: q, pref: 'auto', undo: [], last: null, done: 0 };
+  SES = { mode: 'srs', decks: new Set(ids), deckSel, noNew, queue: q, pref: 'auto', undo: [], last: null, done: 0 };
   route = 'study'; nextCard(); scrollTo(0, 0);
 }
 function startPractice(ids, pref = 'auto', title = '') {
@@ -720,8 +718,30 @@ function nextCard() {
     while (!pick && SES.queue.length) pick = byId(SES.queue.shift());
     if (pick) SES.pos++;
   }
-  if (!pick) { SES.finished = true; flush(); render(); return; }
+  if (!pick) { SES.finished = true; D.resume = null; flush(); render(); return; }
   show(pick);
+}
+// 途中でやめても（アプリを閉じても）ホームの「続きから」で再開できるように、今の位置を保存する
+function saveResume() {
+  if (SES.mode === 'srs') D.resume = { mode: 'srs', deckSel: SES.deckSel, noNew: !!SES.noNew };
+  else D.resume = { mode: 'practice', queue: [SES.cur, ...SES.queue], total: SES.total, pos: Math.max(0, SES.pos - 1), pref: SES.pref, title: SES.title, results: SES.results };
+  save();
+}
+function resumeInfo() {
+  const r = D.resume; if (!r) return null;
+  if (r.mode === 'srs') {
+    if (r.deckSel === '*' || !deckById(r.deckSel)) return null;   // 全デッキなら「復習」「今日やる分」ボタンと同じなので出さない
+    const c = deckCounts([r.deckSel]), left = r.noNew ? c.lr + c.rv : c.sum;
+    return left ? { left, title: deckName(r.deckSel) + (r.noNew ? '（復習）' : '') } : null;
+  }
+  const left = r.queue.filter(byId).length;
+  return left ? { left, title: r.title || '練習モード' } : null;
+}
+function resume() {
+  const r = D.resume; if (!r) return;
+  if (r.mode === 'srs') return startSRS(r.deckSel, r.noNew);
+  SES = { mode: 'practice', queue: r.queue.filter(byId), total: r.total, pos: r.pos, pref: r.pref, undo: [], results: r.results || [], title: r.title, last: null };
+  route = 'study'; nextCard(); scrollTo(0, 0);
 }
 function show(c) {
   Object.assign(SES, { cur: c.id, phase: 'question', correct: null, picked: null, input: '', close: false, t0: Date.now(), finished: false });
@@ -729,6 +749,7 @@ function show(c) {
   if (f === 'choice') { SES.opts = buildChoices(c); if (SES.opts.length < 2) f = 'flash'; }
   if (f !== 'flash' && !primary(c.a)) f = 'flash';   // 答えが写真だけのカードは暗記カードとして出す
   SES.f = f;
+  saveResume();
   render();
 }
 function reveal() { if (SES.phase !== 'question') return; SES.phase = 'answered'; render(); }
@@ -1300,7 +1321,7 @@ const IMP = { text: '', fmt: 'auto', deck: '', newDeck: '', type: 'flash', rev: 
 const HEAD = {
   q: /^(問題|問題文|質問|問い|表|単語|用語|英単語|question|front|q|term|word)$/i,
   a: /^(答え|答|解答|正解|回答|裏|意味|訳|和訳|answer|back|a|meaning|definition)$/i,
-  ch: /^(選択肢|誤答|誤答選択肢|ダミー|choices|options|distractors|wrong)$/i,
+  ch: /^(選択肢|誤答|誤答選択肢|ダミー|ch|choices|options|distractors|wrong)$/i,
   ex: /^(解説|説明|補足|メモ|例文|explanation|note|notes|example)$/i,
   tags: /^(タグ|分野|カテゴリ|tags?|category)$/i,
   type: /^(形式|種類|タイプ|type)$/i,
@@ -1499,6 +1520,10 @@ function vImport() {
         <pre>Q: 日本で一番高い山は？
 A: 富士山
 解説: 標高3776m</pre>
+        <p><b>選択問題</b>：「選択肢」に誤答を <code>｜</code> 区切りで書くと選択式になります（表・CSV・Q/A どれでも可）</p>
+        <pre>Q: 日本の首都は？
+A: 東京
+選択肢: 大阪｜京都｜名古屋</pre>
         <p><b>CSV / TSV</b>：1行目が見出しならその名前で、なければ「問題, 答え, 解説, タグ」の順。Anki の「テキストとして書き出し」もそのまま読めます。Excel の Shift_JIS CSV も可。</p>
         <p><b>画像</b>：セル内の <code>![](https://…)</code> は画像として取り込みます。手元の画像は取り込み後に編集画面で貼り付けてください。</p>
       </details>
@@ -1750,11 +1775,13 @@ function exportCsv() {
    ============================================================ */
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act],[data-go]'); if (!el) return;
-  if (el.dataset.go) { go(el.dataset.go, el.dataset.deck ? { deck: el.dataset.deck } : {}); return; }
+  if (el.dataset.go) { closeOverlay(); go(el.dataset.go, el.dataset.deck ? { deck: el.dataset.deck } : {}); return; }
   const d = el.dataset, a = d.act;
   if (a === 'editRow' && e.target.closest('.brChk')) return;
   switch (a) {
     case 'study': startSRS(d.deck); break;
+    case 'review': startSRS('*', true); break;
+    case 'resume': resume(); break;
     case 'deckMenu': deckMenu(d.deck); break;
     case 'deckDel': deleteDeck($('#fDeck').dataset.id); break;
     case 'phShot': $('#camIn').dataset.k = d.k; $('#camIn').click(); break;
@@ -1785,6 +1812,8 @@ document.addEventListener('click', e => {
     case 'addImg': $('#imgFile').dataset.field = d.field; $('#imgFile').click(); break;
     case 'rmImg': { const i = FORM[d.field].indexOf(d.id); if (i >= 0) FORM[d.field].splice(i, 1); renderThumbs(d.field); break; }
     case 'ovClose': closeOverlay(); break;
+    case 'addMenu': addMenu(); break;
+    case 'newDeck': newDeck(); break;
     case 'ovDel': { const id = $('#fEdit').dataset.id; if (!confirm('このカードを削除しますか？')) break; const c = byId(id); dropCardImages(c); D.cards = D.cards.filter(x => x.id !== id); save(); closeOverlay(); toast('削除しました'); if (route === 'study') nextCard(); else render(); break; }
     case 'ovReset': { const c = byId($('#fEdit').dataset.id); if (!confirm('学習状況（間隔・正誤の記録）をリセットしますか？')) break; c.s = newSRS(); c.st = { ok: 0, ng: 0, last: 0, lastNg: 0 }; save(); closeOverlay(); toast('リセットしました'); render(); break; }
     case 'editRow': openEditor(d.id, route === 'browse' ? brList : null); break;
@@ -1814,7 +1843,6 @@ document.addEventListener('change', e => {
 });
 document.addEventListener('submit', e => {
   e.preventDefault(); const f = e.target;
-  if (f.id === 'fNewDeck') { const n = f.name.value.trim(); if (!n) return; if (D.decks.some(d => d.name === n)) return toast('同じ名前のデッキがあります'); ensureDeck(n); save(); render(); }
   if (f.id === 'fAdd') submitAdd();
   if (f.id === 'fEdit') submitEdit(f);
   if (f.id === 'fDeck') { const n = f.name.value.trim(); if (n) { deckById(f.dataset.id).name = n; save(); closeOverlay(); render(); } }
@@ -1857,12 +1885,31 @@ function editCur() { openEditor(SES.cur, () => show(byId(SES.cur) || {})); }
 function deckMenu(id) {
   const d = deckById(id); const n = D.cards.filter(c => c.deck === id).length;
   document.body.insertAdjacentHTML('beforeend', `<div class="ov" id="ov"><form class="panel dlg" id="fDeck" data-id="${id}" style="width:min(440px,100%)">
-    <div class="row" style="margin-bottom:12px"><h2>デッキの設定</h2><div class="spacer"></div><button type="button" class="btn sm" data-act="ovClose">閉じる</button></div>
+    <div class="row" style="margin-bottom:12px"><h2>${esc(d.name)}</h2><div class="spacer"></div><button type="button" class="btn sm" data-act="ovClose">閉じる</button></div>
+    <div class="menu-list">
+      <button type="button" class="btn" data-go="practice" data-deck="${id}">練習モード<small>期日に関係なく解く</small></button>
+      <button type="button" class="btn" data-go="photo" data-deck="${id}">写真でカードを追加</button>
+      <button type="button" class="btn" data-go="add" data-deck="${id}">文字でカードを追加</button>
+    </div>
     <label>デッキ名<input name="name" value="${esc(d.name)}" required></label>
     <div class="row"><button type="button" class="btn sm danger" data-act="deckDel">デッキを削除（${n} 枚）</button><div class="spacer"></div><button class="btn primary">保存</button></div>
   </form></div>`);
   $('#ov').addEventListener('mousedown', e => { if (e.target.id === 'ov') closeOverlay(); });
-  $('#fDeck [name=name]').select();
+}
+function addMenu() {
+  document.body.insertAdjacentHTML('beforeend', `<div class="ov" id="ov"><div class="panel dlg" style="width:min(400px,100%)">
+    <div class="row" style="margin-bottom:12px"><h2>カードを追加</h2><div class="spacer"></div><button type="button" class="btn sm" data-act="ovClose">閉じる</button></div>
+    <div class="menu-list">
+      <button class="btn" data-go="photo">📷 写真で追加<small>問題と答えを撮る</small></button>
+      <button class="btn" data-go="add">✎ 文字で追加<small>1枚ずつ入力する</small></button>
+      <button class="btn" data-go="import">⇩ まとめて取り込み<small>単語リスト・CSV など</small></button>
+    </div></div></div>`);
+  $('#ov').addEventListener('mousedown', e => { if (e.target.id === 'ov') closeOverlay(); });
+}
+function newDeck() {
+  const n = (prompt('新しいデッキ名') || '').trim(); if (!n) return;
+  if (D.decks.some(d => d.name === n)) return toast('同じ名前のデッキがあります');
+  ensureDeck(n); save(); render();
 }
 function deleteDeck(id) {
   const d = deckById(id); const n = D.cards.filter(c => c.deck === id).length;
