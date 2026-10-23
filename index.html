@@ -203,6 +203,7 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
 .ch-row [type=radio]{width:22px;height:22px;margin:0;flex:none;accent-color:var(--ok)}
 .ch-row .ch-t{flex:1}
 .ch-x{border:0;background:none;color:var(--ink3);cursor:pointer;font-size:14px;padding:6px}
+.imp-bad{margin:0 0 12px;padding:10px 14px;border-radius:10px;background:var(--ng-bg);color:var(--ng);font-size:13px}
 .optlist{display:flex;flex-direction:column;gap:1px;font-size:13px}
 .optlist .ok{color:var(--ok);font-weight:700}
 .imgzone{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:-4px 0 14px;padding:8px;border:1.5px dashed var(--line);border-radius:10px;min-height:52px}
@@ -1384,25 +1385,26 @@ function rowObj(get) {
   const [q, qi] = pullImages(get('q')), [a, ai] = pullImages(get('a'));
   let ch = get('ch'); ch = Array.isArray(ch) ? ch : String(ch || '').split(/\s*[|｜\n]\s*/);
   ch = ch.map(x => cleanText(x)).filter(Boolean);
-  let ans = cleanText(a);
-  const i = ch.includes(ans) ? -1 : optIndex(ans, ch);
+  let ans = cleanText(a), warn = '';
+  const i = optIndex(ans, ch);
   if (i >= 0) ans = ch[i];   // 「正解: 2」のような番号指定
+  else if (i === -2) warn = `正解の番号「${ans}」が選択肢の数（${ch.length}つ）を超えています`;
   let tags = get('tags'); tags = Array.isArray(tags) ? tags : String(tags || '').split(/[\s,、#]+/);
   tags = tags.map(x => String(x).trim()).filter(Boolean);
-  return { q: cleanText(q), a: ans, qi, ai, ch, ex: cleanText(get('ex')), tags, type: parseType(get('type'), ch.length, IMP.type), deck: String(get('deck') || '').trim() };
+  return { q: cleanText(q), a: ans, qi, ai, ch, ex: cleanText(get('ex')), tags, type: parseType(get('type'), ch.length, IMP.type), deck: String(get('deck') || '').trim(), warn };
 }
-// 「2」「B」「イ」「②」などを選択肢の位置に変える。当てはまらなければ -1（以前の「答え＋誤答」の書き方として扱う）
+// 選択肢があるとき、正解欄の「2」「B」「イ」「②」は必ず「何番目か」として読む（選択肢が数字ばかりでも同じ）。
+// 番号の形でなければ -1（正解の文字そのもの、または以前の「答え＋誤答」の書き方として扱う）。番号が選択肢の数を超えたら -2
 function optIndex(v, ch) {
   if (ch.length < 2) return -1;
   v = String(v || '').trim().replace(/^[(（\[［]\s*|\s*[)）\]］]$|\s*番$/g, '');
-  const num = x => /^[0-9０-９.,]+$/.test(x);
-  if (num(v) && ch.every(num)) return -1;   // 選択肢が数値ばかりなら、答えは値そのもの（例：答え 4、誤答 3｜5｜6）
   let i = -1;
   if (/^[1-9１-９][0-9０-９]?$/.test(v)) i = +v.replace(/[０-９]/g, d => d.charCodeAt(0) - 0xFF10) - 1;
+  else if (ch.includes(v)) return -1;   // 記号が選択肢の文字そのもの（例：選択肢 c｜b｜a、正解 a）なら文字として読む
   else if (/^[A-Ha-hＡ-Ｈａ-ｈ]$/.test(v)) i = (v.normalize('NFKC').toUpperCase().charCodeAt(0)) - 65;
   else if (/^[アイウエオカキク]$/.test(v)) i = 'アイウエオカキク'.indexOf(v);
   else if (/^[①-⑨]$/.test(v)) i = v.charCodeAt(0) - 0x2460;
-  return i >= 0 && i < ch.length ? i : -1;
+  return i < 0 ? -1 : i < ch.length ? i : -2;
 }
 function parseDelimited(text, delim) {
   const rows = []; let row = [], f = '', q = false;
@@ -1484,6 +1486,7 @@ function runParse() {
   try {
     IMP.rows = !f ? [] : f === 'json' ? parseJSON(text) : f === 'csv' ? parseDelimited(text, ',') : f === 'tsv' ? parseDelimited(text, '\t') : parseMarkdown(text);
     IMP.rows = IMP.rows.filter(r => (r.q || r.qi.length) && (r.a || r.ai.length));
+    IMP.bad = IMP.rows.filter(r => r.warn); IMP.rows = IMP.rows.filter(r => !r.warn);   // 正解の番号がおかしい行は取り込まない
     IMP.err = '';
   } catch (e) { IMP.rows = []; IMP.err = '読み込めませんでした：' + e.message; }
 }
@@ -1500,8 +1503,10 @@ function aiPrompt() {
 - 1行目は見出し行：${cols.join(md ? ' | ' : ',')}
 - 1行につき1問
 ${ch ? `- 「問題」は問い
-- 「選択肢」は正解を含めて4つを全角の「｜」で区切って入れる。誤答はもっともらしいものにし、正解の位置は問題ごとにばらばらにする
-- 「正解」は正解の選択肢の番号（1〜4）` : `- 「問題」は覚えたい語句や問い、「答え」はその意味や正解
+- 「選択肢」は正解を含めて4つ（元のリストに選択肢があればその数のまま）を、全角の「｜」で区切って1つのセルに入れる。各選択肢の頭に番号や記号（1. や A) など）は付けない
+- 元のリストに選択肢と正解があれば、順番も含めてそのまま使う。なければ、もっともらしい誤答を作り、正解の位置は問題ごとにばらばらにする
+- 「正解」には、正解が「選択肢」の左から何番目かを半角数字（4択なら 1〜4）だけで書く。正解の文字や「番」は書かない
+- 例：${md ? '| 日本の首都は？ | 大阪｜東京｜京都｜名古屋 | 2 | | 地理 |' : '日本の首都は？,大阪｜東京｜京都｜名古屋,2,,地理'}` : `- 「問題」は覚えたい語句や問い、「答え」はその意味や正解
 - 答えに別の言い方がある場合は全角の「｜」で区切る（例：札幌｜さっぽろ）`}
 - 「解説」は短い補足や例文を1文で（不要なら空欄）
 - 「タグ」は分野などを空白区切りで（不要なら空欄）
@@ -1536,6 +1541,7 @@ function vImport() {
         <div class="row" style="margin-bottom:10px"><h2>プレビュー</h2><span class="badge">${FMT_LABEL[IMP.detected] || '—'} として読み取り</span><div class="spacer"></div>
           <button class="btn primary" data-act="impCommit" ${rows.length ? '' : 'disabled'}>${rows.length - (IMP.skipDup ? dups : 0)} 枚を取り込む${IMP.rev ? '（＋逆向き）' : ''}</button></div>
         ${IMP.err ? `<p style="color:var(--ng)">${esc(IMP.err)}</p>` : ''}
+        ${(IMP.bad || []).length ? `<div class="imp-bad"><b>次の ${IMP.bad.length} 問は取り込みません（直してから貼り直してください）</b>${IMP.bad.slice(0, 20).map(r => `<div>・${esc(r.q.slice(0, 40))} — ${esc(r.warn)}</div>`).join('')}</div>` : ''}
         ${rows.length ? `<p class="sub">${rows.length} 枚を読み取りました${dups ? `（うち重複 ${dups} 枚）` : ''}。</p>
         <div class="tbl-wrap" style="max-height:420px;overflow:auto;border:1px solid var(--line)"><table><thead><tr><th>形式</th><th>問題</th><th>答え</th><th>解説</th><th>タグ</th></tr></thead><tbody>
         ${rows.slice(0, 200).map(r => `<tr class="${!r.deck && dupSet.has(norm(r.q)) && IMP.skipDup ? 'dup' : ''}"><td><span class="badge">${TYPE_LABEL[r.type]}</span></td><td>${r.qi.length ? '🖼 ' : ''}${rich(r.q)}</td><td>${r.ai.length ? '🖼 ' : ''}${r.type === 'choice' && r.ch.length ? optsHTML(r) : rich(r.a)}</td><td class="muted">${rich(r.ex)}</td><td>${r.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</td></tr>`).join('')}
@@ -1568,14 +1574,14 @@ function vImport() {
         <pre>Q: 日本で一番高い山は？
 A: 富士山
 解説: 標高3776m</pre>
-        <p><b>選択問題</b>：「選択肢」に正解も含めて <code>｜</code> 区切りで並べ、「正解」に番号を書きます（表・CSV・Q/A どれでも可。<code>B</code> <code>イ</code> <code>②</code> や正解の文字そのものでも可）</p>
+        <p><b>選択問題</b>：「選択肢」に正解も含めて <code>｜</code> 区切りで並べ、「正解」（または「答え」）に<b>何番目が正解か</b>を数字で書きます（表・CSV・Q/A どれでも可。<code>B</code> <code>イ</code> <code>②</code> も可）。選択肢が数字ばかりでも、正解欄の数字は番号として読みます。</p>
         <pre>Q: 日本の首都は？
 選択肢: 大阪｜東京｜京都｜名古屋
 正解: 2</pre>
         <pre>| 問題 | 選択肢 | 正解 |
 |---|---|---|
 | 日本の首都は？ | 大阪｜東京｜京都｜名古屋 | 2 |</pre>
-        <p class="sub">以前の書き方（「答え」に正解、「選択肢」に誤答だけ）もそのまま読めます。出題時は選択肢の順番を毎回入れ替えます。</p>
+        <p class="sub">正解欄に番号ではなく正解の文字を書いた場合や、以前の書き方（「答え」に正解、「選択肢」に誤答だけ）もそのまま読めます。出題時は選択肢の順番を毎回入れ替えます。</p>
         <p><b>CSV / TSV</b>：1行目が見出しならその名前で、なければ「問題, 答え, 解説, タグ」の順。Anki の「テキストとして書き出し」もそのまま読めます。Excel の Shift_JIS CSV も可。</p>
         <p><b>画像</b>：セル内の <code>![](https://…)</code> は画像として取り込みます。手元の画像は取り込み後に編集画面で貼り付けてください。</p>
       </details>
@@ -1818,7 +1824,7 @@ async function restore(file) {
 }
 function exportCsv() {
   const q = s => '"' + String(s ?? '').replace(/"/g, '""') + '"';
-  const lines = [['デッキ', '形式', '問題', '答え', '選択肢', '解説', 'タグ'].join(',')].concat(D.cards.map(c => [deckName(c.deck), TYPE_LABEL[c.type], c.q, c.a, (c.type === 'choice' ? allOpts(c) : c.ch || []).join('｜'), c.ex, (c.tags || []).join(' ')].map(q).join(',')));
+  const lines = [['デッキ', '形式', '問題', '答え', '選択肢', '解説', 'タグ'].join(',')].concat(D.cards.map(c => [deckName(c.deck), TYPE_LABEL[c.type], c.q, c.type === 'choice' ? allOpts(c).indexOf(c.a) + 1 : c.a, (c.type === 'choice' ? allOpts(c) : c.ch || []).join('｜'), c.ex, (c.tags || []).join(' ')].map(q).join(',')));
   saveFile(`まなびカード_${dayKey()}.csv`, new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv' }));
 }
 
