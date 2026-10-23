@@ -197,6 +197,14 @@ td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
 
 /* form */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.ch-ed{margin-bottom:14px}
+.ch-lab{font-size:13px;color:var(--ink2);margin-bottom:6px}
+.ch-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.ch-row [type=radio]{width:22px;height:22px;margin:0;flex:none;accent-color:var(--ok)}
+.ch-row .ch-t{flex:1}
+.ch-x{border:0;background:none;color:var(--ink3);cursor:pointer;font-size:14px;padding:6px}
+.optlist{display:flex;flex-direction:column;gap:1px;font-size:13px}
+.optlist .ok{color:var(--ok);font-weight:700}
 .imgzone{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:-4px 0 14px;padding:8px;border:1.5px dashed var(--line);border-radius:10px;min-height:52px}
 .imgzone.drag{border-color:var(--acc);background:var(--acc2)}
 .imgzone .hint{font-size:12px;color:var(--ink3)}
@@ -443,6 +451,8 @@ function makeCard(o) {
     st: { ok: 0, ng: 0, last: 0, lastNg: 0 }, flag: false, susp: false
   };
 }
+// 正解を含む選択肢の一覧（以前の「誤答だけ」のカードは先頭に正解を足す）
+function allOpts(c) { const ch = c.ch || []; return !c.a || ch.includes(c.a) ? [...ch] : [c.a, ...ch]; }
 function reverseOf(o) { return { ...o, q: o.a.split(/\s*[|｜]\s*/).join(' / '), a: o.q, qi: o.ai || [], ai: o.qi || [], ch: [], type: o.type === 'choice' ? 'choice' : o.type, tags: [...(o.tags || []), '逆'] }; }
 const byId = id => D.cards.find(c => c.id === id);
 const deckById = id => D.decks.find(d => d.id === id);
@@ -929,19 +939,36 @@ function cardFormHTML(c, opt = {}) {
     </div>
     <label>問題<textarea name="q" rows="3" placeholder="例：ephemeral">${esc(c.q)}</textarea></label>
     <div class="imgzone" data-field="qi"></div>
-    <label><span class="lab-a">答え</span><textarea name="a" rows="2" placeholder="例：はかない、つかの間の">${esc(c.a)}</textarea></label>
+    <label class="not-choice"><span class="lab-a">答え</span><textarea name="a" rows="2" placeholder="例：はかない、つかの間の">${esc(c.a)}</textarea></label>
+    <div class="only-choice ch-ed">
+      <div class="ch-lab">選択肢（正解の ○ を押す。誤答が3つ未満のときは他のカードの答えで補います）</div>
+      <div id="chList">${chRowsHTML(c)}</div>
+      <button type="button" class="btn sm" data-act="chAdd">＋ 選択肢</button>
+    </div>
     <div class="imgzone" data-field="ai"></div>
-    <label class="only-choice">誤答の選択肢（1行に1つ。空欄なら他のカードの答えから自動で作ります）<textarea name="ch" rows="3">${esc((c.ch || []).join('\n'))}</textarea></label>
     <label>解説（任意）<textarea name="ex" rows="2">${esc(c.ex)}</textarea></label>
     <label>タグ（スペース区切り・任意）<input name="tags" value="${esc((c.tags || []).join(' '))}"></label>
     ${opt.reverse ? `<label class="chk"><input type="checkbox" name="rev" ${opt.revOn ? 'checked' : ''}> 逆向きのカードも作る（答え → 問題）</label>` : ''}
   </div>`;
 }
+const chRowHTML = (t = '', ok = false) => `<div class="ch-row"><input type="radio" name="chOk" ${ok ? 'checked' : ''} title="これが正解"><input class="ch-t" value="${esc(t)}" placeholder="選択肢"><button type="button" class="ch-x" data-act="chDel" title="削除">✕</button></div>`;
+function chRowsHTML(c) {
+  const opts = allOpts(c); while (opts.length < 4) opts.push('');
+  return opts.map(t => chRowHTML(t, !!c.a && t === c.a)).join('');
+}
+function readChoices(cf) {
+  const rows = $$('.ch-row', cf).map(r => ({ t: $('.ch-t', r).value.trim(), ok: $('[type=radio]', r).checked })).filter(r => r.t);
+  return { opts: rows.map(r => r.t), ans: (rows.find(r => r.ok) || {}).t || '' };
+}
 function wireForm() {
   const cf = $('#cf'); if (!cf) return;
   const typeSel = $('[name=type]', cf);
   const upd = () => {
-    const t = typeSel.value; $('.only-choice', cf).hidden = t !== 'choice';
+    const t = typeSel.value, ta = $('[name=a]', cf), rows = $$('.ch-t', cf), r = readChoices(cf);
+    // 形式を切り替えたとき、答えと選択肢の正解を引き継ぐ
+    if (t === 'choice' && !r.opts.length && ta.value.trim()) { rows[0].value = ta.value.trim(); $('.ch-row [type=radio]', cf).checked = true; }
+    if (t !== 'choice' && r.ans && !ta.value.trim()) ta.value = r.ans;
+    $('.only-choice', cf).hidden = t !== 'choice'; $('.not-choice', cf).hidden = t === 'choice';
     $('.lab-a', cf).textContent = t === 'input' ? '答え（別解は | で区切る。例：札幌|さっぽろ）' : '答え';
   };
   typeSel.addEventListener('change', upd); upd();
@@ -977,13 +1004,14 @@ function readForm() {
   const cf = $('#cf'), v = n => ($(`[name=${n}]`, cf) || {}).value || '';
   return {
     deck: v('deck'), type: v('type'), q: v('q').trim(), a: v('a').trim(), ex: v('ex').trim(),
-    ch: v('ch').split('\n').map(s => s.trim()).filter(Boolean), tags: v('tags').split(/[\s　]+/).filter(Boolean),
+    ...(({ opts, ans }) => v('type') === 'choice' ? { ch: opts, a: ans } : { ch: opts.filter(t => t !== v('a').trim()) })(readChoices(cf)), tags: v('tags').split(/[\s　]+/).filter(Boolean),
     qi: [...FORM.qi], ai: [...FORM.ai], rev: !!($('[name=rev]', cf) || {}).checked
   };
 }
 function validCard(o) {
   if (!o.deck || o.deck === '__new') return 'デッキを選んでください';
   if (!o.q && !o.qi.length) return '問題を入力してください';
+  if (o.type === 'choice' && !o.a) return '選択肢を入力して、正解の ○ を押してください';
   if (!o.a && !o.ai.length) return '答えを入力してください';
   return '';
 }
@@ -1356,9 +1384,25 @@ function rowObj(get) {
   const [q, qi] = pullImages(get('q')), [a, ai] = pullImages(get('a'));
   let ch = get('ch'); ch = Array.isArray(ch) ? ch : String(ch || '').split(/\s*[|｜\n]\s*/);
   ch = ch.map(x => cleanText(x)).filter(Boolean);
+  let ans = cleanText(a);
+  const i = ch.includes(ans) ? -1 : optIndex(ans, ch);
+  if (i >= 0) ans = ch[i];   // 「正解: 2」のような番号指定
   let tags = get('tags'); tags = Array.isArray(tags) ? tags : String(tags || '').split(/[\s,、#]+/);
   tags = tags.map(x => String(x).trim()).filter(Boolean);
-  return { q: cleanText(q), a: cleanText(a), qi, ai, ch, ex: cleanText(get('ex')), tags, type: parseType(get('type'), ch.length, IMP.type), deck: String(get('deck') || '').trim() };
+  return { q: cleanText(q), a: ans, qi, ai, ch, ex: cleanText(get('ex')), tags, type: parseType(get('type'), ch.length, IMP.type), deck: String(get('deck') || '').trim() };
+}
+// 「2」「B」「イ」「②」などを選択肢の位置に変える。当てはまらなければ -1（以前の「答え＋誤答」の書き方として扱う）
+function optIndex(v, ch) {
+  if (ch.length < 2) return -1;
+  v = String(v || '').trim().replace(/^[(（\[［]\s*|\s*[)）\]］]$|\s*番$/g, '');
+  const num = x => /^[0-9０-９.,]+$/.test(x);
+  if (num(v) && ch.every(num)) return -1;   // 選択肢が数値ばかりなら、答えは値そのもの（例：答え 4、誤答 3｜5｜6）
+  let i = -1;
+  if (/^[1-9１-９][0-9０-９]?$/.test(v)) i = +v.replace(/[０-９]/g, d => d.charCodeAt(0) - 0xFF10) - 1;
+  else if (/^[A-Ha-hＡ-Ｈａ-ｈ]$/.test(v)) i = (v.normalize('NFKC').toUpperCase().charCodeAt(0)) - 65;
+  else if (/^[アイウエオカキク]$/.test(v)) i = 'アイウエオカキク'.indexOf(v);
+  else if (/^[①-⑨]$/.test(v)) i = v.charCodeAt(0) - 0x2460;
+  return i >= 0 && i < ch.length ? i : -1;
 }
 function parseDelimited(text, delim) {
   const rows = []; let row = [], f = '', q = false;
@@ -1443,18 +1487,22 @@ function runParse() {
     IMP.err = '';
   } catch (e) { IMP.rows = []; IMP.err = '読み込めませんでした：' + e.message; }
 }
+function optsHTML(c) {
+  return `<div class="optlist">${allOpts(c).map((t, i) => `<span class="${t === c.a ? 'ok' : ''}">${i + 1}. ${esc(t)}${t === c.a ? ' ✓' : ''}</span>`).join('')}</div>`;
+}
 function aiPrompt() {
   const md = IMP.aiFmt === 'md', ch = IMP.aiChoice;
-  const cols = ch ? ['問題', '答え', '選択肢', '解説', 'タグ'] : ['問題', '答え', '解説', 'タグ'];
+  const cols = ch ? ['問題', '選択肢', '正解', '解説', 'タグ'] : ['問題', '答え', '解説', 'タグ'];
   return `次のリストを、暗記アプリに取り込める${md ? ' Markdown の表' : ' CSV'}に変換してください。
 
 # 出力ルール
 - ${md ? 'Markdown の表だけ' : 'CSV だけ（コードブロックに入れる）'}を出力し、前後の説明文は書かない
 - 1行目は見出し行：${cols.join(md ? ' | ' : ',')}
 - 1行につき1問
-- 「問題」は覚えたい語句や問い、「答え」はその意味や正解
-- 答えに別の言い方がある場合は全角の「｜」で区切る（例：札幌｜さっぽろ）${ch ? `
-- 「選択肢」には、もっともらしい誤答を3つ、全角の「｜」で区切って入れる` : ''}
+${ch ? `- 「問題」は問い
+- 「選択肢」は正解を含めて4つを全角の「｜」で区切って入れる。誤答はもっともらしいものにし、正解の位置は問題ごとにばらばらにする
+- 「正解」は正解の選択肢の番号（1〜4）` : `- 「問題」は覚えたい語句や問い、「答え」はその意味や正解
+- 答えに別の言い方がある場合は全角の「｜」で区切る（例：札幌｜さっぽろ）`}
 - 「解説」は短い補足や例文を1文で（不要なら空欄）
 - 「タグ」は分野などを空白区切りで（不要なら空欄）
 ${md ? '- セル内で改行したいときは <br> を使う' : '- カンマや改行を含むセルはダブルクォートで囲む'}
@@ -1490,7 +1538,7 @@ function vImport() {
         ${IMP.err ? `<p style="color:var(--ng)">${esc(IMP.err)}</p>` : ''}
         ${rows.length ? `<p class="sub">${rows.length} 枚を読み取りました${dups ? `（うち重複 ${dups} 枚）` : ''}。</p>
         <div class="tbl-wrap" style="max-height:420px;overflow:auto;border:1px solid var(--line)"><table><thead><tr><th>形式</th><th>問題</th><th>答え</th><th>解説</th><th>タグ</th></tr></thead><tbody>
-        ${rows.slice(0, 200).map(r => `<tr class="${!r.deck && dupSet.has(norm(r.q)) && IMP.skipDup ? 'dup' : ''}"><td><span class="badge">${TYPE_LABEL[r.type]}</span></td><td>${r.qi.length ? '🖼 ' : ''}${rich(r.q)}</td><td>${r.ai.length ? '🖼 ' : ''}${rich(r.a)}${r.ch.length ? `<div class="muted" style="font-size:12px">誤答：${esc(r.ch.join(' / '))}</div>` : ''}</td><td class="muted">${rich(r.ex)}</td><td>${r.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</td></tr>`).join('')}
+        ${rows.slice(0, 200).map(r => `<tr class="${!r.deck && dupSet.has(norm(r.q)) && IMP.skipDup ? 'dup' : ''}"><td><span class="badge">${TYPE_LABEL[r.type]}</span></td><td>${r.qi.length ? '🖼 ' : ''}${rich(r.q)}</td><td>${r.ai.length ? '🖼 ' : ''}${r.type === 'choice' && r.ch.length ? optsHTML(r) : rich(r.a)}</td><td class="muted">${rich(r.ex)}</td><td>${r.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</td></tr>`).join('')}
         </tbody></table></div>${rows.length > 200 ? `<p class="sub">先頭200件を表示しています</p>` : ''}` : (IMP.err ? '' : '<p class="sub">カードとして読み取れる行がありませんでした。右の「使える形式」を確認してください。</p>')}
       </div>` : ''}
     </div>
@@ -1500,7 +1548,7 @@ function vImport() {
         <p class="sub">これをコピーして、いつも使っているAIに単語リストと一緒に送ってください。返ってきた表を左に貼り付ければ取り込めます。</p>
         <div class="row" style="margin-bottom:10px">
           <select id="aiFmt" style="width:auto"><option value="md" ${IMP.aiFmt === 'md' ? 'selected' : ''}>Markdown の表で</option><option value="csv" ${IMP.aiFmt === 'csv' ? 'selected' : ''}>CSV で</option></select>
-          <label class="chk" style="margin:0"><input type="checkbox" id="aiChoice" ${IMP.aiChoice ? 'checked' : ''}> 選択式の誤答も作らせる</label>
+          <label class="chk" style="margin:0"><input type="checkbox" id="aiChoice" ${IMP.aiChoice ? 'checked' : ''}> 選択問題にする（選択肢と正解の番号も作らせる）</label>
         </div>
         <label>単語リスト（任意・ここに入れると依頼文に含めます）<textarea id="aiList" rows="4" placeholder="apple&#10;ephemeral&#10;…">${esc(IMP.aiList)}</textarea></label>
         <pre class="prompt" id="aiPrompt">${esc(aiPrompt())}</pre>
@@ -1520,10 +1568,14 @@ function vImport() {
         <pre>Q: 日本で一番高い山は？
 A: 富士山
 解説: 標高3776m</pre>
-        <p><b>選択問題</b>：「選択肢」に誤答を <code>｜</code> 区切りで書くと選択式になります（表・CSV・Q/A どれでも可）</p>
+        <p><b>選択問題</b>：「選択肢」に正解も含めて <code>｜</code> 区切りで並べ、「正解」に番号を書きます（表・CSV・Q/A どれでも可。<code>B</code> <code>イ</code> <code>②</code> や正解の文字そのものでも可）</p>
         <pre>Q: 日本の首都は？
-A: 東京
-選択肢: 大阪｜京都｜名古屋</pre>
+選択肢: 大阪｜東京｜京都｜名古屋
+正解: 2</pre>
+        <pre>| 問題 | 選択肢 | 正解 |
+|---|---|---|
+| 日本の首都は？ | 大阪｜東京｜京都｜名古屋 | 2 |</pre>
+        <p class="sub">以前の書き方（「答え」に正解、「選択肢」に誤答だけ）もそのまま読めます。出題時は選択肢の順番を毎回入れ替えます。</p>
         <p><b>CSV / TSV</b>：1行目が見出しならその名前で、なければ「問題, 答え, 解説, タグ」の順。Anki の「テキストとして書き出し」もそのまま読めます。Excel の Shift_JIS CSV も可。</p>
         <p><b>画像</b>：セル内の <code>![](https://…)</code> は画像として取り込みます。手元の画像は取り込み後に編集画面で貼り付けてください。</p>
       </details>
@@ -1766,7 +1818,7 @@ async function restore(file) {
 }
 function exportCsv() {
   const q = s => '"' + String(s ?? '').replace(/"/g, '""') + '"';
-  const lines = [['デッキ', '形式', '問題', '答え', '選択肢', '解説', 'タグ'].join(',')].concat(D.cards.map(c => [deckName(c.deck), TYPE_LABEL[c.type], c.q, c.a, (c.ch || []).join('｜'), c.ex, (c.tags || []).join(' ')].map(q).join(',')));
+  const lines = [['デッキ', '形式', '問題', '答え', '選択肢', '解説', 'タグ'].join(',')].concat(D.cards.map(c => [deckName(c.deck), TYPE_LABEL[c.type], c.q, c.a, (c.type === 'choice' ? allOpts(c) : c.ch || []).join('｜'), c.ex, (c.tags || []).join(' ')].map(q).join(',')));
   saveFile(`まなびカード_${dayKey()}.csv`, new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv' }));
 }
 
@@ -1812,6 +1864,8 @@ document.addEventListener('click', e => {
     case 'addImg': $('#imgFile').dataset.field = d.field; $('#imgFile').click(); break;
     case 'rmImg': { const i = FORM[d.field].indexOf(d.id); if (i >= 0) FORM[d.field].splice(i, 1); renderThumbs(d.field); break; }
     case 'ovClose': closeOverlay(); break;
+    case 'chAdd': $('#chList').insertAdjacentHTML('beforeend', chRowHTML()); $('#chList .ch-row:last-child .ch-t').focus(); break;
+    case 'chDel': el.closest('.ch-row').remove(); break;
     case 'addMenu': addMenu(); break;
     case 'newDeck': newDeck(); break;
     case 'ovDel': { const id = $('#fEdit').dataset.id; if (!confirm('このカードを削除しますか？')) break; const c = byId(id); dropCardImages(c); D.cards = D.cards.filter(x => x.id !== id); save(); closeOverlay(); toast('削除しました'); if (route === 'study') nextCard(); else render(); break; }
